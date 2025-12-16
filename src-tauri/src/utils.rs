@@ -1,5 +1,5 @@
-use std::path::Path;
 use crate::models::{ImageFile, ImageMetadata};
+use std::path::Path;
 
 /// Check if a file path has a supported image extension
 pub fn is_supported_image(path: &Path) -> bool {
@@ -21,7 +21,7 @@ pub fn scan_directory_for_images(dir_path: &Path) -> Vec<ImageFile> {
     if let Ok(entries) = std::fs::read_dir(dir_path) {
         for entry in entries.flatten() {
             let path = entry.path();
-            
+
             if path.is_file() && is_supported_image(&path) {
                 if let (Some(filename), Some(extension)) = (
                     path.file_name().and_then(|n| n.to_str()),
@@ -45,19 +45,20 @@ pub fn scan_directory_for_images(dir_path: &Path) -> Vec<ImageFile> {
 /// Extract image metadata using the image crate
 pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
     // Get file size
-    let metadata = std::fs::metadata(path)
-        .map_err(|e| format!("Failed to read file metadata: {}", e))?;
+    let metadata =
+        std::fs::metadata(path).map_err(|e| format!("Failed to read file metadata: {}", e))?;
     let size = metadata.len();
 
     // Get image dimensions and format
-    let img_reader = image::ImageReader::open(path)
-        .map_err(|e| format!("Failed to open image: {}", e))?;
-    
+    let img_reader =
+        image::ImageReader::open(path).map_err(|e| format!("Failed to open image: {}", e))?;
+
     let format = img_reader
         .format()
         .ok_or("Could not determine image format")?;
-    
-    let img = img_reader.decode()
+
+    let img = img_reader
+        .decode()
         .map_err(|e| format!("Failed to decode image: {}", e))?;
 
     Ok(ImageMetadata {

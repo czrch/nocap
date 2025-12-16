@@ -1,27 +1,62 @@
 <script lang="ts">
-  import { viewer } from '../stores/viewer';
-  import { invoke } from '@tauri-apps/api/core';
-  import type { ImageFile } from '../types';
+  import { viewer } from "../stores/viewer";
+  import { open } from "@tauri-apps/plugin-dialog";
+  import type { ImageFile } from "../types";
 
   async function openFile() {
     try {
-      const file = await invoke<ImageFile | null>('open_image_dialog');
-      if (file) {
+      const selected = await open({
+        multiple: false,
+        filters: [
+          {
+            name: "Images",
+            extensions: ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"],
+          },
+        ],
+      });
+
+      if (selected && typeof selected === "string") {
+        // Extract filename and extension from path
+        const pathParts = selected.split(/[/\\]/);
+        const filename = pathParts[pathParts.length - 1];
+        const extensionMatch = filename.match(/\.([^.]+)$/);
+        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : "";
+
+        const file: ImageFile = {
+          path: selected,
+          filename: filename,
+          extension: extension,
+        };
+
         viewer.loadImage(file);
       }
     } catch (err) {
-      console.error('Failed to open file:', err);
+      console.error("Failed to open file:", err);
     }
   }
 
   async function openFolder() {
     try {
-      const files = await invoke<ImageFile[]>('open_folder_dialog');
-      if (files && files.length > 0) {
-        viewer.loadFolder(files);
+      const selected = await open({
+        directory: true,
+        multiple: false,
+      });
+
+      if (selected && typeof selected === "string") {
+        // Scan the folder for images using the backend
+        const { invoke } = await import("@tauri-apps/api/core");
+        const images = await invoke<ImageFile[]>("scan_folder_for_images", {
+          folderPath: selected,
+        });
+
+        if (images && images.length > 0) {
+          viewer.loadFolder(images);
+        } else {
+          alert("No images found in the selected folder.");
+        }
       }
     } catch (err) {
-      console.error('Failed to open folder:', err);
+      console.error("Failed to open folder:", err);
     }
   }
 
@@ -63,22 +98,34 @@
   </div>
 
   <div class="toolbar-section">
-    <button on:click={zoomOut} disabled={!$viewer.currentImage} title="Zoom Out (-)">
+    <button
+      on:click={zoomOut}
+      disabled={!$viewer.currentImage}
+      title="Zoom Out (-)"
+    >
       🔍−
     </button>
-    <button on:click={resetZoom} disabled={!$viewer.currentImage} title="Reset Zoom (0)">
+    <button
+      on:click={resetZoom}
+      disabled={!$viewer.currentImage}
+      title="Reset Zoom (0)"
+    >
       {Math.round($viewer.zoomLevel * 100)}%
     </button>
-    <button on:click={zoomIn} disabled={!$viewer.currentImage} title="Zoom In (+)">
+    <button
+      on:click={zoomIn}
+      disabled={!$viewer.currentImage}
+      title="Zoom In (+)"
+    >
       🔍+
     </button>
-    <button 
-      on:click={toggleFit} 
+    <button
+      on:click={toggleFit}
       disabled={!$viewer.currentImage}
       class:active={$viewer.fitToWindow}
       title="Fit to Window (F)"
     >
-      {$viewer.fitToWindow ? '⊡' : '⊞'}
+      {$viewer.fitToWindow ? "⊡" : "⊞"}
     </button>
   </div>
 </div>

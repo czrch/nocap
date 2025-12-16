@@ -14,7 +14,7 @@
     "icon": [],
     "publisher": "czrch",
     "copyright": "Copyright (c) 2025 czrch",
-    "category": "Graphics",
+    "category": "Graphics and Design",
     "shortDescription": "Minimal cross-platform image viewer",
     "longDescription": "A fast, minimal image viewer built with Tauri and Svelte. Supports JPG, PNG, GIF, BMP, WebP, and SVG formats with keyboard shortcuts and zoom controls."
   },
@@ -33,17 +33,10 @@
       "csp": null,
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": [
+          "**"
+        ]
       }
-    }
-  },
-  "plugins": {
-    "dialog": {
-      "all": true,
-      "open": true
-    },
-    "fs": {
-      "scope": ["**"]
     }
   }
 }

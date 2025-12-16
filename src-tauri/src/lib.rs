@@ -1,6 +1,6 @@
+mod commands;
 mod models;
 mod utils;
-mod commands;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -11,6 +11,7 @@ pub fn run() {
             commands::open_image_dialog,
             commands::open_folder_dialog,
             commands::get_adjacent_images,
+            commands::scan_folder_for_images,
             commands::get_image_metadata,
         ])
         .run(tauri::generate_context!())
