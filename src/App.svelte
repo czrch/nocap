@@ -1,7 +1,7 @@
 <script lang="ts">
   import { viewer } from './lib/stores/viewer';
+  import ImageViewer from './lib/components/ImageViewer.svelte';
   
-  // Placeholder for components - will be added in Phase 4
   let showWelcome = true;
   
   $: if ($viewer.currentImage) {
@@ -27,10 +27,7 @@
         <p class="hint">Use File menu or keyboard shortcuts</p>
       </div>
     {:else}
-      <!-- ImageViewer component will be added in Phase 4.8 -->
-      <div class="image-placeholder">
-        Image viewer coming soon...
-      </div>
+      <ImageViewer />
     {/if}
   </div>
 
