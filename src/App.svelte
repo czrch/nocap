@@ -1,6 +1,7 @@
 <script lang="ts">
   import { viewer } from './lib/stores/viewer';
   import ImageViewer from './lib/components/ImageViewer.svelte';
+  import Toolbar from './lib/components/Toolbar.svelte';
   
   let showWelcome = true;
   
@@ -10,13 +11,7 @@
 </script>
 
 <div class="app-container">
-  <!-- Toolbar will be added in Phase 4.9 -->
-  <div class="toolbar-placeholder">
-    <div class="toolbar-content">
-      <span>nocap</span>
-      <span>Minimal Image Viewer</span>
-    </div>
-  </div>
+  <Toolbar />
 
   <!-- Main viewer area -->
   <div class="viewer-container">
@@ -41,21 +36,6 @@
     width: 100%;
     height: 100vh;
     overflow: hidden;
-  }
-
-  .toolbar-placeholder {
-    background: #1a1a1a;
-    border-bottom: 1px solid #333;
-    padding: 0.75rem 1rem;
-    flex-shrink: 0;
-  }
-
-  .toolbar-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    color: #aaa;
   }
 
   .viewer-container {
@@ -89,9 +69,5 @@
     font-size: 0.9rem;
     color: #666;
     margin-top: 1.5rem;
-  }
-
-  .image-placeholder {
-    color: #666;
   }
 </style>
