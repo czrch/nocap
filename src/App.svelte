@@ -9,7 +9,46 @@
   $: if ($viewer.currentImage) {
     showWelcome = false;
   }
+
+  function handleKeydown(event: KeyboardEvent) {
+    // Ignore if typing in an input field
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      return;
+    }
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        event.preventDefault();
+        viewer.previousImage();
+        break;
+      case 'ArrowRight':
+        event.preventDefault();
+        viewer.nextImage();
+        break;
+      case '+':
+      case '=':
+        event.preventDefault();
+        viewer.zoomIn();
+        break;
+      case '-':
+      case '_':
+        event.preventDefault();
+        viewer.zoomOut();
+        break;
+      case '0':
+        event.preventDefault();
+        viewer.resetZoom();
+        break;
+      case 'f':
+      case 'F':
+        event.preventDefault();
+        viewer.toggleFitToWindow();
+        break;
+    }
+  }
 </script>
+
+<svelte:window on:keydown={handleKeydown} />
 
 <div class="app-container">
   <Toolbar />
