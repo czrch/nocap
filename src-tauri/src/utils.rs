@@ -50,7 +50,7 @@ pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
     let size = metadata.len();
 
     // Get image dimensions and format
-    let img_reader = image::io::Reader::open(path)
+    let img_reader = image::ImageReader::open(path)
         .map_err(|e| format!("Failed to open image: {}", e))?;
     
     let format = img_reader

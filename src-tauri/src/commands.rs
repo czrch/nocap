@@ -1,23 +1,22 @@
-use std::path::Path;
 use crate::models::{ImageFile, ImageMetadata};
-use crate::utils::{scan_directory_for_images, extract_image_info};
+use crate::utils::{extract_image_info, scan_directory_for_images};
+use std::path::Path;
+use tauri_plugin_dialog::DialogExt;
 
 /// Open a native file picker dialog for selecting a single image
 #[tauri::command]
-pub async fn open_image_dialog() -> Result<Option<ImageFile>, String> {
-    use tauri_plugin_dialog::{DialogExt, FileDialogBuilder};
-    
-    let file = tauri::async_runtime::spawn(async {
-        FileDialogBuilder::new()
-            .add_filter("Images", &["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"])
-            .pick_file()
-            .await
-    })
-    .await
-    .map_err(|e| format!("Dialog error: {}", e))?;
+pub fn open_image_dialog(app: tauri::AppHandle) -> Result<Option<ImageFile>, String> {
+    let file = app
+        .dialog()
+        .file()
+        .add_filter(
+            "Images",
+            &["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"],
+        )
+        .blocking_pick_file();
 
-    if let Some(path) = file {
-        let path_buf = path.path;
+    if let Some(file_path) = file {
+        let path_buf = std::path::PathBuf::from(file_path.to_string());
         if let (Some(filename), Some(extension)) = (
             path_buf.file_name().and_then(|n| n.to_str()),
             path_buf.extension().and_then(|e| e.to_str()),
@@ -37,19 +36,11 @@ pub async fn open_image_dialog() -> Result<Option<ImageFile>, String> {
 
 /// Open a native folder picker dialog and return all images in that folder
 #[tauri::command]
-pub async fn open_folder_dialog() -> Result<Vec<ImageFile>, String> {
-    use tauri_plugin_dialog::{DialogExt, FileDialogBuilder};
-    
-    let folder = tauri::async_runtime::spawn(async {
-        FileDialogBuilder::new()
-            .pick_folder()
-            .await
-    })
-    .await
-    .map_err(|e| format!("Dialog error: {}", e))?;
+pub fn open_folder_dialog(app: tauri::AppHandle) -> Result<Vec<ImageFile>, String> {
+    let folder = app.dialog().file().blocking_pick_folder();
 
-    if let Some(path) = folder {
-        let path_buf = path.path;
+    if let Some(folder_path) = folder {
+        let path_buf = std::path::PathBuf::from(folder_path.to_string());
         let images = scan_directory_for_images(&path_buf);
         Ok(images)
     } else {
@@ -61,10 +52,9 @@ pub async fn open_folder_dialog() -> Result<Vec<ImageFile>, String> {
 #[tauri::command]
 pub fn get_adjacent_images(current_path: String) -> Result<Vec<ImageFile>, String> {
     let path = Path::new(&current_path);
-    
-    let dir = path.parent()
-        .ok_or("Could not get parent directory")?;
-    
+
+    let dir = path.parent().ok_or("Could not get parent directory")?;
+
     let images = scan_directory_for_images(dir);
     Ok(images)
 }
