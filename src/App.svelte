@@ -2,6 +2,7 @@
   import { viewer } from './lib/stores/viewer';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
+  import NavigationControls from './lib/components/NavigationControls.svelte';
   
   let showWelcome = true;
   
@@ -23,10 +24,9 @@
       </div>
     {:else}
       <ImageViewer />
+      <NavigationControls />
     {/if}
   </div>
-
-  <!-- Navigation controls will be added in Phase 4.10 -->
 </div>
 
 <style>
@@ -40,6 +40,7 @@
 
   .viewer-container {
     flex: 1;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
