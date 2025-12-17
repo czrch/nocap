@@ -212,14 +212,27 @@
     color: #cfcfcf;
     font-size: 0.95rem;
     line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
   }
 
   .control:hover {
     background: #2a2a2a;
   }
 
+  .control:active {
+    background: #242424;
+  }
+
   .control.close:hover {
     background: #c42b1c;
     color: #fff;
+  }
+
+  .control.close:active {
+    background: #a82315;
   }
 </style>
