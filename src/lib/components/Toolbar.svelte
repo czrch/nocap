@@ -95,8 +95,9 @@
           aria-haspopup="menu"
           aria-expanded={open}
           title="File"
+          aria-label="File menu"
         >
-          File ▾
+          📄 ▾
         </button>
       </svelte:fragment>
 
