@@ -3,6 +3,8 @@
   import { getCurrentWindow, type Window as TauriWindow } from '@tauri-apps/api/window';
   import { onDestroy, onMount } from 'svelte';
   import { viewer } from '../stores/viewer';
+  import DropdownMenu from './DropdownMenu.svelte';
+  import MenuList from './MenuList.svelte';
 
   import appIconUrl from '../../../src-tauri/icons/32x32.png?url';
 
@@ -87,6 +89,26 @@
 
 {#if isNative}
   <div class="titlebar">
+    <DropdownMenu menuAriaLabel="Application menu" align="left">
+      <svelte:fragment slot="trigger" let:open let:toggle>
+        <button
+          type="button"
+          class="hamburger-button"
+          on:click={toggle}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          title="Menu"
+          aria-label="Application menu"
+        >
+          ☰
+        </button>
+      </svelte:fragment>
+
+      <svelte:fragment slot="menu" let:close>
+        <MenuList closeMenu={close} />
+      </svelte:fragment>
+    </DropdownMenu>
+
     <div class="drag-region" data-tauri-drag-region on:pointerdown={startDrag}>
       <img class="app-icon" src={appIconUrl} alt="" aria-hidden="true" />
       <div class="title">
@@ -121,6 +143,32 @@
     background: #141414;
     border-bottom: 1px solid #2a2a2a;
     flex-shrink: 0;
+  }
+
+  .hamburger-button {
+    width: 38px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-right: 1px solid #2a2a2a;
+    border-radius: 0;
+    background: transparent;
+    color: #cfcfcf;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hamburger-button:hover {
+    background: #2a2a2a;
+  }
+
+  .hamburger-button:active {
+    background: #242424;
   }
 
   .drag-region {

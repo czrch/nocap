@@ -1,18 +1,89 @@
 <script lang="ts">
   import { isTauri } from '@tauri-apps/api/core';
   import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+  import { invoke } from '@tauri-apps/api/core';
+  import { message, open } from '@tauri-apps/plugin-dialog';
   import { onMount } from 'svelte';
   import { viewer } from './lib/stores/viewer';
   import { ui } from './lib/stores/ui';
+  import type { ImageFile } from './lib/types';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
-  import Toolbar from './lib/components/Toolbar.svelte';
   import NavigationControls from './lib/components/NavigationControls.svelte';
+  import ContextMenu from './lib/components/ContextMenu.svelte';
+  import SettingsDialog from './lib/components/SettingsDialog.svelte';
   
   let showWelcome = true;
+  let contextMenuX = 0;
+  let contextMenuY = 0;
+  let showContextMenu = false;
   
   $: if ($viewer.currentImage) {
     showWelcome = false;
+  }
+
+  async function openFile() {
+    try {
+      const selected = await open({
+        multiple: false,
+        filters: [
+          {
+            name: 'Images',
+            extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'],
+          },
+        ],
+      });
+
+      if (selected && typeof selected === 'string') {
+        const pathParts = selected.split(/[/\\]/);
+        const filename = pathParts[pathParts.length - 1];
+        const extensionMatch = filename.match(/\.([^.]+)$/);
+        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : '';
+
+        const file: ImageFile = {
+          path: selected,
+          filename: filename,
+          extension: extension,
+        };
+
+        viewer.loadImage(file);
+      }
+    } catch (err) {
+      console.error('Failed to open file:', err);
+    }
+  }
+
+  async function openFolder() {
+    try {
+      const selected = await open({
+        directory: true,
+        multiple: false,
+      });
+
+      if (selected && typeof selected === 'string') {
+        const images = await invoke<ImageFile[]>('scan_folder_for_images', {
+          folderPath: selected,
+        });
+
+        if (images && images.length > 0) {
+          viewer.loadFolder(images);
+        } else {
+          await message('No images found in the selected folder.', {
+            title: 'nocap',
+            kind: 'info',
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Failed to open folder:', err);
+    }
+  }
+
+  function handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+    contextMenuX = event.clientX;
+    contextMenuY = event.clientY;
+    showContextMenu = true;
   }
 
   onMount(() => {
@@ -72,15 +143,26 @@
 
 <div class="app-container">
   <TitleBar />
-  <Toolbar />
 
   <!-- Main viewer area -->
-  <div class="viewer-container">
+  <div class="viewer-container" on:contextmenu={handleContextMenu} role="main">
     {#if showWelcome}
       <div class="welcome">
         <h1>nocap</h1>
         <p>Open an image or folder to get started</p>
-        <p class="hint">Use File menu or keyboard shortcuts</p>
+        
+        <div class="welcome-buttons">
+          <button type="button" class="action-button" on:click={openFile}>
+            <span class="button-icon">📄</span>
+            <span>Open File</span>
+          </button>
+          <button type="button" class="action-button" on:click={openFolder}>
+            <span class="button-icon">📁</span>
+            <span>Open Folder</span>
+          </button>
+        </div>
+
+        <p class="hint">Or use the menu (☰) or right-click anywhere</p>
       </div>
     {:else}
       <ImageViewer />
@@ -88,6 +170,9 @@
     {/if}
   </div>
 </div>
+
+<ContextMenu bind:show={showContextMenu} x={contextMenuX} y={contextMenuY} />
+<SettingsDialog open={$ui.settingsOpen} on:close={() => ui.closeSettings()} />
 
 <style>
   .app-container {
@@ -130,5 +215,44 @@
     font-size: 0.9rem;
     color: #666;
     margin-top: 1.5rem;
+  }
+
+  .welcome-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin: 2rem 0 1rem;
+  }
+
+  .action-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ddd;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+  }
+
+  .action-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .action-button:active {
+    transform: translateY(0);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .button-icon {
+    font-size: 2rem;
+    line-height: 1;
   }
 </style>
