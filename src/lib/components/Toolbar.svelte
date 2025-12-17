@@ -2,9 +2,11 @@
   import { invoke } from '@tauri-apps/api/core';
   import { message, open } from '@tauri-apps/plugin-dialog';
   import { viewer } from '../stores/viewer';
+  import { ui } from '../stores/ui';
   import type { ImageFile } from '../types';
 
   import DropdownMenu from './DropdownMenu.svelte';
+  import SettingsDialog from './SettingsDialog.svelte';
 
   async function openFile() {
     try {
@@ -125,6 +127,16 @@
         </button>
       </svelte:fragment>
     </DropdownMenu>
+
+    <button
+      type="button"
+      class="icon-button"
+      on:click={() => ui.openSettings()}
+      title="Preferences"
+      aria-label="Preferences"
+    >
+      ⚙
+    </button>
   </div>
 
   <div class="toolbar-center">
@@ -211,6 +223,8 @@
   </div>
 </div>
 
+<SettingsDialog open={$ui.settingsOpen} on:close={() => ui.closeSettings()} />
+
 <style>
   .toolbar {
     display: grid;
@@ -275,5 +289,12 @@
 
   .menu-item:active {
     background: #242424;
+  }
+
+  .icon-button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 6px;
   }
 </style>

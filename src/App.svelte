@@ -1,5 +1,9 @@
 <script lang="ts">
+  import { isTauri } from '@tauri-apps/api/core';
+  import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+  import { onMount } from 'svelte';
   import { viewer } from './lib/stores/viewer';
+  import { ui } from './lib/stores/ui';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
@@ -10,6 +14,21 @@
   $: if ($viewer.currentImage) {
     showWelcome = false;
   }
+
+  onMount(() => {
+    if (!isTauri()) return;
+
+    let unlistenOpenSettings: UnlistenFn | null = null;
+    void (async () => {
+      unlistenOpenSettings = await listen('nocap://open-settings', () => {
+        ui.openSettings();
+      });
+    })();
+
+    return () => {
+      unlistenOpenSettings?.();
+    };
+  });
 
   function handleKeydown(event: KeyboardEvent) {
     // Ignore if typing in an input field
