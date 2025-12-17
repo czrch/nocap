@@ -1,9 +1,6 @@
 <script lang="ts">
-  import { isTauri } from '@tauri-apps/api/core';
-  import { listen, type UnlistenFn } from '@tauri-apps/api/event';
   import { invoke } from '@tauri-apps/api/core';
   import { message, open } from '@tauri-apps/plugin-dialog';
-  import { onMount } from 'svelte';
   import { viewer } from './lib/stores/viewer';
   import { ui } from './lib/stores/ui';
   import { settings } from './lib/stores/settings';
@@ -86,21 +83,6 @@
     contextMenuY = event.clientY;
     showContextMenu = true;
   }
-
-  onMount(() => {
-    if (!isTauri()) return;
-
-    let unlistenOpenSettings: UnlistenFn | null = null;
-    void (async () => {
-      unlistenOpenSettings = await listen('nocap://open-settings', () => {
-        ui.openSettings();
-      });
-    })();
-
-    return () => {
-      unlistenOpenSettings?.();
-    };
-  });
 
   function handleKeydown(event: KeyboardEvent) {
     // Ignore if typing in an input field
