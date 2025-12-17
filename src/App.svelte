@@ -6,6 +6,7 @@
   import { onMount } from 'svelte';
   import { viewer } from './lib/stores/viewer';
   import { ui } from './lib/stores/ui';
+  import { settings } from './lib/stores/settings';
   import type { ImageFile } from './lib/types';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
@@ -141,7 +142,7 @@
 
 <svelte:window on:keydown={handleKeydown} />
 
-<div class="app-container">
+<div class="app-container" style="zoom: {$settings.uiScale}%">
   <TitleBar />
 
   <!-- Main viewer area -->
