@@ -212,6 +212,21 @@ cargo fmt            # Format Rust code
 cargo clippy         # Lint Rust code
 ```
 
+### Platform-Specific Notes
+
+#### Linux (Wayland)
+When running on Wayland, ensure the following environment variables are set:
+```bash
+# For native Wayland support
+export GDK_BACKEND=wayland
+export WAYLAND_DISPLAY=wayland-1
+
+# Run the app
+npm run tauri dev
+```
+
+If you encounter display protocol errors, verify your Wayland compositor is running and `$WAYLAND_DISPLAY` is properly set.
+
 ### Key Files
 - `docs/implementation_plan.md` - Full implementation guide
 - `src-tauri/tauri.conf.json` - App configuration
