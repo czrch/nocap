@@ -1,6 +1,7 @@
 <script lang="ts">
   import { viewer } from './lib/stores/viewer';
   import ImageViewer from './lib/components/ImageViewer.svelte';
+  import TitleBar from './lib/components/TitleBar.svelte';
   import Toolbar from './lib/components/Toolbar.svelte';
   import NavigationControls from './lib/components/NavigationControls.svelte';
   
@@ -51,6 +52,7 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <div class="app-container">
+  <TitleBar />
   <Toolbar />
 
   <!-- Main viewer area -->
