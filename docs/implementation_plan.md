@@ -82,10 +82,9 @@ nocap/
 ## [Functions]
 
 **src-tauri/src/commands.rs**:
-- `open_image_dialog() -> Result<Option<ImageFile>, String>` - Native file picker for images
-- `open_folder_dialog() -> Result<Vec<ImageFile>, String>` - Folder picker, returns all images in dir
 - `get_adjacent_images(current_path: String) -> Result<Vec<ImageFile>, String>` - All images in same dir as current
 - `get_image_metadata(path: String) -> Result<ImageMetadata, String>` - Extract dimensions, size, format
+- `scan_folder_for_images(folder_path: String) -> Result<Vec<ImageFile>, String>` - Scan a directory for images
 
 **src-tauri/src/utils.rs**:
 - `is_supported_image(path: &Path) -> bool` - Check extension (jpg|jpeg|png|gif|bmp|webp|svg)
@@ -114,17 +113,16 @@ nocap/
 ```json
 {
   "dependencies": {
-    "@tauri-apps/api": "^2.9.0",
-    "@tauri-apps/plugin-dialog": "^2.9.0",
-    "@tauri-apps/plugin-fs": "^2.9.0"
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^4.0.0",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@tsconfig/svelte": "^5.0.0",
     "svelte": "^4.2.0",
     "svelte-check": "^4.0.0",
     "typescript": "^5.6.0",
-    "vite": "^6.0.0",
+    "vite": "^5.0.0",
     "tslib": "^2.8.0"
   }
 }
@@ -133,13 +131,11 @@ nocap/
 **Cargo.toml**:
 ```toml
 [dependencies]
-tauri = { version = "2.9", features = ["macos-private-api"] }
-tauri-plugin-dialog = "2.9"
-tauri-plugin-fs = "2.9"
+tauri = { version = "2.0", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 image = "0.25"
-walkdir = "2.4"
 ```
 
 ## [Testing]
@@ -162,12 +158,12 @@ Manual testing MVP. Automated tests deferred to future.
 npm create tauri-app@latest . -- -m npm -t svelte-ts --tauri-version 2 -y
 npm install
 ```
-Verify: `npm run tauri dev` launches
+Verify: `npm run tauri:dev` launches
 
-**2. chore: add fs and dialog plugins with permissions**
-- Modify `src-tauri/Cargo.toml`: Add `tauri-plugin-{dialog,fs} = "2.9"`
-- Modify `src-tauri/tauri.conf.json`: Add plugins array
-- Modify `src-tauri/capabilities/default.json`: Set fs/dialog permissions
+**2. chore: add dialog plugin with permissions**
+- Modify `src-tauri/Cargo.toml`: Add `tauri-plugin-dialog = "2.0"`
+- Modify `src-tauri/src/lib.rs`: Register plugin
+- Modify `src-tauri/capabilities/default.json`: Set dialog permissions
 Verify: Plugins import without errors
 
 ### Phase 2: Backend
@@ -178,7 +174,7 @@ Verify: Cargo build success
 
 **4. feat: add image file scanning utilities**
 - Create `src-tauri/src/utils.rs` with helper functions
-- Modify `src-tauri/Cargo.toml`: Add `image = "0.25"`, `walkdir = "2.4"`
+- Modify `src-tauri/Cargo.toml`: Add `image = "0.25"`
 - Modify `src-tauri/src/main.rs`: Add `mod utils;`
 Verify: Cargo build success
 
@@ -228,7 +224,7 @@ Verify: Manual testing checklist complete
 
 **13. chore: configure build settings for distribution**
 - Modify `src-tauri/tauri.conf.json`: Bundle identifier, icons, build config
-Verify: `npm run tauri build` succeeds
+Verify: `npm run tauri:build` succeeds
 
 ---
 

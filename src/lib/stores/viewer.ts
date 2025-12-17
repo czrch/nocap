@@ -17,26 +17,28 @@ function createViewerStore() {
     subscribe,
     
     loadImage: (file: ImageFile) => {
-      update(state => {
-        // If loading a new image, get all images in its directory
-        invoke<ImageFile[]>('get_adjacent_images', { currentPath: file.path })
-          .then(images => {
-            const index = images.findIndex(img => img.path === file.path);
-            update(s => ({
-              ...s,
+      update(state => ({
+        ...state,
+        currentImage: file,
+        zoomLevel: 1.0,
+        fitToWindow: true,
+      }));
+
+      // Load all images in the same directory as the selected image.
+      // Guard against out-of-order responses (e.g., user rapidly changes images).
+      invoke<ImageFile[]>('get_adjacent_images', { currentPath: file.path })
+        .then(images => {
+          const index = images.findIndex(img => img.path === file.path);
+          update(state => {
+            if (state.currentImage?.path !== file.path) return state;
+            return {
+              ...state,
               imageList: images,
               currentIndex: index,
-            }));
-          })
-          .catch(err => console.error('Failed to load adjacent images:', err));
-
-        return {
-          ...state,
-          currentImage: file,
-          zoomLevel: 1.0,
-          fitToWindow: true,
-        };
-      });
+            };
+          });
+        })
+        .catch(err => console.error('Failed to load adjacent images:', err));
     },
 
     loadFolder: async (files: ImageFile[]) => {

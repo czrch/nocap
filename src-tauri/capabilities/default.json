@@ -9,9 +9,6 @@
     "core:window:allow-minimize",
     "core:window:allow-maximize",
     "core:window:allow-unmaximize",
-    "dialog:allow-open",
-    "fs:allow-read-file",
-    "fs:allow-read-dir",
-    "fs:default"
+    "dialog:allow-open"
   ]
 }

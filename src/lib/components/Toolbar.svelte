@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { viewer } from "../stores/viewer";
-  import { open } from "@tauri-apps/plugin-dialog";
-  import type { ImageFile } from "../types";
+  import { invoke } from '@tauri-apps/api/core';
+  import { message, open } from '@tauri-apps/plugin-dialog';
+  import { viewer } from '../stores/viewer';
+  import type { ImageFile } from '../types';
 
   async function openFile() {
     try {
@@ -9,18 +10,18 @@
         multiple: false,
         filters: [
           {
-            name: "Images",
-            extensions: ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"],
+            name: 'Images',
+            extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'],
           },
         ],
       });
 
-      if (selected && typeof selected === "string") {
+      if (selected && typeof selected === 'string') {
         // Extract filename and extension from path
         const pathParts = selected.split(/[/\\]/);
         const filename = pathParts[pathParts.length - 1];
         const extensionMatch = filename.match(/\.([^.]+)$/);
-        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : "";
+        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : '';
 
         const file: ImageFile = {
           path: selected,
@@ -31,7 +32,7 @@
         viewer.loadImage(file);
       }
     } catch (err) {
-      console.error("Failed to open file:", err);
+      console.error('Failed to open file:', err);
     }
   }
 
@@ -42,21 +43,23 @@
         multiple: false,
       });
 
-      if (selected && typeof selected === "string") {
+      if (selected && typeof selected === 'string') {
         // Scan the folder for images using the backend
-        const { invoke } = await import("@tauri-apps/api/core");
-        const images = await invoke<ImageFile[]>("scan_folder_for_images", {
+        const images = await invoke<ImageFile[]>('scan_folder_for_images', {
           folderPath: selected,
         });
 
         if (images && images.length > 0) {
           viewer.loadFolder(images);
         } else {
-          alert("No images found in the selected folder.");
+          await message('No images found in the selected folder.', {
+            title: 'nocap',
+            kind: 'info',
+          });
         }
       }
     } catch (err) {
-      console.error("Failed to open folder:", err);
+      console.error('Failed to open folder:', err);
     }
   }
 

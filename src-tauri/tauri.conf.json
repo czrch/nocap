@@ -30,12 +30,32 @@
       }
     ],
     "security": {
-      "csp": null,
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost; base-uri 'self'; form-action 'none'; frame-ancestors 'none'; frame-src 'none'; object-src 'none'",
+      "devCsp": null,
+      "freezePrototype": true,
       "assetProtocol": {
         "enable": true,
-        "scope": [
-          "**"
-        ]
+        "scope": {
+          "allow": [
+            "$HOME/**",
+            "$PICTURE/**",
+            "$DESKTOP/**",
+            "$DOCUMENT/**",
+            "$DOWNLOAD/**"
+          ],
+          "deny": [
+            "$APPDATA/**",
+            "$APPLOCALDATA/**",
+            "$APPCACHE/**",
+            "$APPLOG/**",
+            "$CONFIG/**",
+            "$CACHE/**",
+            "$LOCALDATA/**",
+            "$RUNTIME/**",
+            "$TEMP/**"
+          ],
+          "requireLiteralLeadingDot": true
+        }
       }
     }
   }

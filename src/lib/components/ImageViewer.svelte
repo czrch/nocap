@@ -71,6 +71,11 @@
   }
 </script>
 
+<!--
+  This is an intentionally interactive region (wheel zoom + drag pan) and is focusable for accessibility.
+  Svelte's generic a11y rules don't recognize `role="application"` as interactive.
+-->
+<!-- svelte-ignore a11y-no-noninteractive-tabindex a11y-no-noninteractive-element-interactions -->
 <div 
   class="image-viewer"
   bind:this={containerEl}

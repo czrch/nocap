@@ -2,33 +2,7 @@
 
 ## Common Issues and Solutions
 
-### Issue 1: "Development Project Initializer" Appearing During `npm run tauri:dev`
-
-**Symptoms:**
-- When running `npm run tauri:dev`, an interactive menu appears asking to select project type
-- Error: "Invalid choice"
-- Dev server fails to start properly
-
-**Root Cause:**
-The shell configuration (`~/.zshrc`) had a function named `dev()` that conflicted with development commands. When npm scripts spawn subshells, this function was being triggered.
-
-**Solution:**
-Renamed the `dev()` function to `init_project()` in `~/.zshrc` (line 825).
-
-```bash
-# Backup created at: ~/.zshrc.backup
-# Changed from: dev()
-# Changed to: init_project()
-```
-
-**To use the project initializer now:**
-```bash
-init_project  # instead of dev
-```
-
----
-
-### Issue 2: Wayland Display Error (Error 71: Protocol error)
+### Issue 1: Wayland Display Error (Error 71: Protocol error)
 
 **Symptoms:**
 ```
@@ -41,10 +15,10 @@ Gdk-Message: Error 71 (Protocol error) dispatching to Wayland display.
 Tauri/WebKit has compatibility issues with certain Wayland configurations, particularly with DMA-BUF rendering.
 
 **Solution:**
-Added Wayland compatibility environment variable to npm scripts in `package.json`:
+Use the Wayland compatibility dev script:
 
-```json
-"tauri:dev": "WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev"
+```bash
+npm run tauri:dev:wayland
 ```
 
 **Alternative Solution (X11 fallback):**
@@ -62,7 +36,7 @@ This forces the app to use XWayland instead of native Wayland.
 
 ---
 
-### Issue 3: Accessibility Warning - Mouse Events on Non-Interactive Element
+### Issue 2: Accessibility Warning - Mouse Events on Non-Interactive Element
 
 **Symptoms:**
 ```
@@ -91,6 +65,19 @@ Updated `src/lib/components/ImageViewer.svelte`:
 
 ---
 
+### Issue 3: Image Fails to Load After Selecting a File
+
+**Symptoms:**
+- You can select an image via the file picker, but the viewer stays blank (or the image doesn’t render)
+
+**Root Cause:**
+The app loads images via Tauri’s `asset:` protocol (`convertFileSrc()`), which is restricted by `app.security.assetProtocol.scope` in `src-tauri/tauri.conf.json`.
+
+**Solution:**
+Either move the image into one of the allowed directories (default: your home/pictures/desktop/documents/downloads), or widen the scope in `src-tauri/tauri.conf.json` under `app.security.assetProtocol.scope`.
+
+---
+
 ## Quick Reference
 
 ### Recommended Development Command
@@ -100,6 +87,11 @@ npm run tauri:dev
 
 ### If Wayland Issues Persist
 ```bash
+npm run tauri:dev:wayland
+```
+
+### X11 Fallback (Linux)
+```bash
 npm run tauri:dev:x11
 ```
 
@@ -107,11 +99,6 @@ npm run tauri:dev:x11
 ```bash
 echo $WAYLAND_DISPLAY  # Should show: wayland-0
 echo $XDG_SESSION_TYPE # Should show: wayland or x11
-```
-
-### Restore Original Shell Config (if needed)
-```bash
-cp ~/.zshrc.backup ~/.zshrc
 ```
 
 ---
