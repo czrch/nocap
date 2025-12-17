@@ -165,9 +165,9 @@
     class="menu-item"
     role="menuitem"
     on:click={openSettings}
-    title="Preferences"
+    title="Settings"
   >
-    Preferences…
+    Settings…
   </button>
 </div>
 
