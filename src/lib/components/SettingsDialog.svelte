@@ -1,7 +1,16 @@
 <script lang="ts">
   import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import { settings, type UiScale } from '../stores/settings';
 
   export let open = false;
+
+  const scaleOptions: UiScale[] = [100, 110, 125, 150, 175, 200];
+
+  function handleScaleChange(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const scale = parseInt(target.value) as UiScale;
+    settings.setUiScale(scale);
+  }
 
   const dispatch = createEventDispatcher<{ close: void }>();
 
@@ -57,7 +66,19 @@
       </div>
 
       <div class="content">
-        <p class="hint">Settings coming soon.</p>
+        <div class="setting-row">
+          <label for="ui-scale" class="setting-label">UI Scale</label>
+          <select
+            id="ui-scale"
+            class="setting-select"
+            value={$settings.uiScale}
+            on:change={handleScaleChange}
+          >
+            {#each scaleOptions as scale}
+              <option value={scale}>{scale}%</option>
+            {/each}
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -117,8 +138,36 @@
     padding: 1rem 0.9rem 1.1rem;
   }
 
-  .hint {
-    color: #9a9a9a;
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .setting-label {
+    color: #e6e6e6;
     font-size: 0.9rem;
+    user-select: none;
+  }
+
+  .setting-select {
+    padding: 0.4rem 0.6rem;
+    background: #1e1e1e;
+    border: 1px solid #3a3a3a;
+    border-radius: 5px;
+    color: #e6e6e6;
+    font-size: 0.85rem;
+    cursor: pointer;
+    min-width: 100px;
+  }
+
+  .setting-select:hover {
+    border-color: #4a4a4a;
+  }
+
+  .setting-select:focus {
+    outline: none;
+    border-color: #5a5a5a;
   }
 </style>
