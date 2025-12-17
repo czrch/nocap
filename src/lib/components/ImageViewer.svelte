@@ -80,8 +80,9 @@
   on:mouseup={handleMouseUp}
   on:mouseleave={handleMouseUp}
   style="cursor: {$viewer.fitToWindow ? 'default' : 'grab'};"
-  role="img"
-  aria-label="Image viewer"
+  role="application"
+  aria-label="Image viewer with zoom and pan controls"
+  tabindex="0"
 >
   {#if imageSrc}
     <img
