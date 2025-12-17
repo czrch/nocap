@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "tauri": "tauri",
-    "tauri:dev": "tauri dev",
+    "tauri:dev": "WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev",
+    "tauri:dev:x11": "WAYLAND_DISPLAY= tauri dev",
     "tauri:build": "tauri build"
   },
   "dependencies": {
