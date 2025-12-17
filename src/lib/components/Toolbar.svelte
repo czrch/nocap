@@ -1,48 +1,10 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import { message, open } from '@tauri-apps/plugin-dialog';
-  import { onDestroy, onMount } from 'svelte';
   import { viewer } from '../stores/viewer';
   import type { ImageFile } from '../types';
 
-  let fileMenuOpen = false;
-  let fileMenuContainer: HTMLDivElement | null = null;
-
-  function closeFileMenu() {
-    fileMenuOpen = false;
-  }
-
-  function toggleFileMenu() {
-    fileMenuOpen = !fileMenuOpen;
-  }
-
-  function handleGlobalPointerDown(event: PointerEvent) {
-    if (!fileMenuOpen) return;
-    const target = event.target;
-    if (!(target instanceof Node)) return;
-    if (!fileMenuContainer) return;
-    if (!fileMenuContainer.contains(target)) {
-      closeFileMenu();
-    }
-  }
-
-  function handleGlobalKeydown(event: KeyboardEvent) {
-    if (!fileMenuOpen) return;
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeFileMenu();
-    }
-  }
-
-  onMount(() => {
-    window.addEventListener('pointerdown', handleGlobalPointerDown, true);
-    window.addEventListener('keydown', handleGlobalKeydown);
-  });
-
-  onDestroy(() => {
-    window.removeEventListener('pointerdown', handleGlobalPointerDown, true);
-    window.removeEventListener('keydown', handleGlobalKeydown);
-  });
+  import DropdownMenu from './DropdownMenu.svelte';
 
   async function openFile() {
     try {
@@ -118,58 +80,54 @@
   function toggleFit() {
     viewer.toggleFitToWindow();
   }
-
-  async function handleOpenFile() {
-    closeFileMenu();
-    await openFile();
-  }
-
-  async function handleOpenFolder() {
-    closeFileMenu();
-    await openFolder();
-  }
 </script>
 
 <div class="toolbar">
-  <div class="toolbar-section">
-    <div class="menu-container" bind:this={fileMenuContainer}>
-      <button
-        type="button"
-        class="menu-button"
-        on:click={toggleFileMenu}
-        aria-haspopup="menu"
-        aria-expanded={fileMenuOpen}
-        title="File"
-      >
-        File ▾
-      </button>
+  <div class="toolbar-left">
+    <DropdownMenu menuAriaLabel="File menu" align="left">
+      <svelte:fragment slot="trigger" let:open let:toggle>
+        <button
+          type="button"
+          class="menu-button"
+          on:click={toggle}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          title="File"
+        >
+          File ▾
+        </button>
+      </svelte:fragment>
 
-      {#if fileMenuOpen}
-        <div class="menu" role="menu" aria-label="File menu">
-          <button
-            type="button"
-            class="menu-item"
-            role="menuitem"
-            on:click={handleOpenFile}
-            title="Open Image (Ctrl+O)"
-          >
-            Open File…
-          </button>
-          <button
-            type="button"
-            class="menu-item"
-            role="menuitem"
-            on:click={handleOpenFolder}
-            title="Open Folder (Ctrl+Shift+O)"
-          >
-            Open Folder…
-          </button>
-        </div>
-      {/if}
-    </div>
+      <svelte:fragment slot="menu" let:close>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            void openFile();
+          }}
+          title="Open Image (Ctrl+O)"
+        >
+          Open File…
+        </button>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            void openFolder();
+          }}
+          title="Open Folder (Ctrl+Shift+O)"
+        >
+          Open Folder…
+        </button>
+      </svelte:fragment>
+    </DropdownMenu>
   </div>
 
-  <div class="toolbar-section filename">
+  <div class="toolbar-center">
     {#if $viewer.currentImage}
       <span class="filename-text" title={$viewer.currentImage.path}>
         {$viewer.currentImage.filename}
@@ -179,44 +137,85 @@
     {/if}
   </div>
 
-  <div class="toolbar-section">
-    <button
-      on:click={zoomOut}
-      disabled={!$viewer.currentImage}
-      title="Zoom Out (-)"
-    >
-      🔍−
-    </button>
-    <button
-      on:click={resetZoom}
-      disabled={!$viewer.currentImage}
-      title="Reset Zoom (0)"
-    >
-      {Math.round($viewer.zoomLevel * 100)}%
-    </button>
-    <button
-      on:click={zoomIn}
-      disabled={!$viewer.currentImage}
-      title="Zoom In (+)"
-    >
-      🔍+
-    </button>
-    <button
-      on:click={toggleFit}
-      disabled={!$viewer.currentImage}
-      class:active={$viewer.fitToWindow}
-      title="Fit to Window (F)"
-    >
-      {$viewer.fitToWindow ? "⊡" : "⊞"}
-    </button>
+  <div class="toolbar-right">
+    <DropdownMenu menuAriaLabel="Zoom menu" align="right">
+      <svelte:fragment slot="trigger" let:open let:toggle>
+        <button
+          type="button"
+          class="menu-button"
+          on:click={toggle}
+          aria-haspopup="menu"
+          aria-expanded={open}
+          disabled={!$viewer.currentImage}
+          title={`Zoom (${Math.round($viewer.zoomLevel * 100)}%)`}
+        >
+          🔍 {Math.round($viewer.zoomLevel * 100)}% ▾
+        </button>
+      </svelte:fragment>
+
+      <svelte:fragment slot="menu" let:close>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            zoomIn();
+          }}
+          disabled={!$viewer.currentImage}
+          title="Zoom In (+)"
+        >
+          Zoom In
+        </button>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            zoomOut();
+          }}
+          disabled={!$viewer.currentImage}
+          title="Zoom Out (-)"
+        >
+          Zoom Out
+        </button>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            resetZoom();
+          }}
+          disabled={!$viewer.currentImage}
+          title="Reset Zoom (0)"
+        >
+          Reset Zoom
+        </button>
+        <button
+          type="button"
+          class="menu-item"
+          role="menuitem"
+          on:click={() => {
+            close();
+            toggleFit();
+          }}
+          disabled={!$viewer.currentImage}
+          title="Fit to Window (F)"
+        >
+          {$viewer.fitToWindow ? 'Disable Fit to Window' : 'Fit to Window'}
+        </button>
+      </svelte:fragment>
+    </DropdownMenu>
   </div>
 </div>
 
 <style>
   .toolbar {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    justify-content: space-between;
     gap: 1rem;
     background: #1a1a1a;
     border-bottom: 1px solid #333;
@@ -224,14 +223,16 @@
     flex-shrink: 0;
   }
 
-  .toolbar-section {
+  .toolbar-left,
+  .toolbar-right {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
 
-  .toolbar-section.filename {
-    flex: 1;
+  .toolbar-center {
+    display: flex;
+    align-items: center;
     justify-content: center;
     min-width: 0;
   }
@@ -255,36 +256,8 @@
     white-space: nowrap;
   }
 
-  button.active {
-    background: #3a5a8a;
-    border-color: #4a6a9a;
-  }
-
-  button.active:hover {
-    background: #4a6a9a;
-  }
-
-  .menu-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-
   .menu-button {
     padding: 0.4rem 0.7rem;
-  }
-
-  .menu {
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    min-width: 180px;
-    background: #1f1f1f;
-    border: 1px solid #333;
-    border-radius: 6px;
-    padding: 0.25rem;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
-    z-index: 20;
   }
 
   .menu-item {
