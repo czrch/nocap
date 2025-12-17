@@ -1,8 +1,48 @@
 <script lang="ts">
   import { invoke } from '@tauri-apps/api/core';
   import { message, open } from '@tauri-apps/plugin-dialog';
+  import { onDestroy, onMount } from 'svelte';
   import { viewer } from '../stores/viewer';
   import type { ImageFile } from '../types';
+
+  let fileMenuOpen = false;
+  let fileMenuContainer: HTMLDivElement | null = null;
+
+  function closeFileMenu() {
+    fileMenuOpen = false;
+  }
+
+  function toggleFileMenu() {
+    fileMenuOpen = !fileMenuOpen;
+  }
+
+  function handleGlobalPointerDown(event: PointerEvent) {
+    if (!fileMenuOpen) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (!fileMenuContainer) return;
+    if (!fileMenuContainer.contains(target)) {
+      closeFileMenu();
+    }
+  }
+
+  function handleGlobalKeydown(event: KeyboardEvent) {
+    if (!fileMenuOpen) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeFileMenu();
+    }
+  }
+
+  onMount(() => {
+    window.addEventListener('pointerdown', handleGlobalPointerDown, true);
+    window.addEventListener('keydown', handleGlobalKeydown);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener('pointerdown', handleGlobalPointerDown, true);
+    window.removeEventListener('keydown', handleGlobalKeydown);
+  });
 
   async function openFile() {
     try {
@@ -78,16 +118,55 @@
   function toggleFit() {
     viewer.toggleFitToWindow();
   }
+
+  async function handleOpenFile() {
+    closeFileMenu();
+    await openFile();
+  }
+
+  async function handleOpenFolder() {
+    closeFileMenu();
+    await openFolder();
+  }
 </script>
 
 <div class="toolbar">
   <div class="toolbar-section">
-    <button on:click={openFile} title="Open Image (Ctrl+O)">
-      📁 Open File
-    </button>
-    <button on:click={openFolder} title="Open Folder (Ctrl+Shift+O)">
-      📂 Open Folder
-    </button>
+    <div class="menu-container" bind:this={fileMenuContainer}>
+      <button
+        type="button"
+        class="menu-button"
+        on:click={toggleFileMenu}
+        aria-haspopup="menu"
+        aria-expanded={fileMenuOpen}
+        title="File"
+      >
+        File ▾
+      </button>
+
+      {#if fileMenuOpen}
+        <div class="menu" role="menu" aria-label="File menu">
+          <button
+            type="button"
+            class="menu-item"
+            role="menuitem"
+            on:click={handleOpenFile}
+            title="Open Image (Ctrl+O)"
+          >
+            Open File…
+          </button>
+          <button
+            type="button"
+            class="menu-item"
+            role="menuitem"
+            on:click={handleOpenFolder}
+            title="Open Folder (Ctrl+Shift+O)"
+          >
+            Open Folder…
+          </button>
+        </div>
+      {/if}
+    </div>
   </div>
 
   <div class="toolbar-section filename">
@@ -183,5 +262,45 @@
 
   button.active:hover {
     background: #4a6a9a;
+  }
+
+  .menu-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .menu-button {
+    padding: 0.4rem 0.7rem;
+  }
+
+  .menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 180px;
+    background: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 0.25rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+    z-index: 20;
+  }
+
+  .menu-item {
+    width: 100%;
+    text-align: left;
+    border: 0;
+    border-radius: 4px;
+    padding: 0.55rem 0.65rem;
+    background: transparent;
+  }
+
+  .menu-item:hover {
+    background: #2a2a2a;
+  }
+
+  .menu-item:active {
+    background: #242424;
   }
 </style>
