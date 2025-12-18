@@ -12,6 +12,18 @@ export interface ImageMetadata {
   format: string;
 }
 
+export interface ExifSummary {
+  date_taken: string | null;
+  camera_make: string | null;
+  camera_model: string | null;
+  lens_model: string | null;
+  author: string | null;
+  description: string | null;
+  copyright: string | null;
+  software: string | null;
+  orientation: string | null;
+}
+
 export interface ViewerState {
   currentImage: ImageFile | null;
   imageList: ImageFile[];
