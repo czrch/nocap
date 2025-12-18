@@ -64,22 +64,23 @@ pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
         });
     }
 
-    // Get image dimensions and format
-    let img_reader =
-        image::ImageReader::open(path).map_err(|e| format!("Failed to open image: {}", e))?;
+    // Get image dimensions and format (header-only; avoids decoding full image)
+    let img_reader = image::ImageReader::open(path)
+        .and_then(|r| r.with_guessed_format())
+        .map_err(|e| format!("Failed to open image: {}", e))?;
 
     let format = img_reader
         .format()
         .ok_or("Could not determine image format")?;
 
-    let img = img_reader
-        .decode()
-        .map_err(|e| format!("Failed to decode image: {}", e))?;
+    let (width, height) = img_reader
+        .into_dimensions()
+        .map_err(|e| format!("Failed to read image dimensions: {}", e))?;
 
     Ok(ImageMetadata {
         path: path.to_string_lossy().to_string(),
-        width: img.width(),
-        height: img.height(),
+        width,
+        height,
         size,
         format: format!("{:?}", format).to_lowercase(),
     })
