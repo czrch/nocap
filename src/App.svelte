@@ -2,10 +2,12 @@
   import { viewer } from './lib/stores/viewer';
   import { ui } from './lib/stores/ui';
   import { settings } from './lib/stores/settings';
+  import { metadata } from './lib/stores/metadata';
   import { pickImageFile, pickImageFolder } from './lib/actions/open';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
   import NavigationControls from './lib/components/NavigationControls.svelte';
+  import InspectorPanel from './lib/components/InspectorPanel.svelte';
   import ContextMenu from './lib/components/ContextMenu.svelte';
   import SettingsDialog from './lib/components/SettingsDialog.svelte';
   
@@ -13,9 +15,16 @@
   let contextMenuX = 0;
   let contextMenuY = 0;
   let showContextMenu = false;
+  let lastExifPath: string | null = null;
   
   $: if ($viewer.currentImage) {
     showWelcome = false;
+  }
+
+  $: currentPath = $viewer.currentImage?.path ?? null;
+  $: if (currentPath !== lastExifPath) {
+    lastExifPath = currentPath;
+    metadata.loadExif(currentPath);
   }
 
   async function openFile() {
@@ -109,8 +118,13 @@
         <p class="hint">Or use the menu (☰) or right-click anywhere</p>
       </div>
     {:else}
-      <ImageViewer />
-      <NavigationControls />
+      <div class="viewer-split">
+        <div class="viewer-stage">
+          <ImageViewer />
+          <NavigationControls />
+        </div>
+        <InspectorPanel />
+      </div>
     {/if}
   </div>
 </div>
@@ -131,13 +145,29 @@
     flex: 1;
     position: relative;
     display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
     background: #0a0a0a;
   }
 
+  .viewer-split {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .viewer-stage {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
   .welcome {
+    width: 100%;
     text-align: center;
     color: #888;
     user-select: none;
