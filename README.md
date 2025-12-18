@@ -5,6 +5,7 @@ A minimal, cross-platform image viewer built with Tauri v2, Svelte, and Rust.
 ## Features
 
 - 🖼️ **Image Viewing**: Support for JPG, PNG, GIF, BMP, WebP, SVG
+- 🧾 **EXIF Inspector**: View common EXIF fields (read-only) for JPEG/TIFF
 - 🔍 **Zoom Controls**: Zoom in/out, fit to window, reset zoom
 - ⌨️ **Keyboard Shortcuts**: Fast navigation and control
 - 📁 **Folder Support**: Open entire folders, browse through images
@@ -59,6 +60,15 @@ The built application will be in `src-tauri/target/release/bundle/`.
 - **Mouse Wheel**: Scroll to zoom in/out
 - **Pan**: Click and drag when zoomed in
 
+### EXIF Inspector
+
+When an image is open, the right-side inspector panel displays common EXIF fields (when present).
+
+Supported for EXIF viewing:
+
+- JPEG/JPG
+- TIFF/TIF
+
 ## Keyboard Shortcuts
 
 | Action         | Shortcut   |
@@ -78,6 +88,7 @@ The built application will be in `src-tauri/target/release/bundle/`.
 - BMP
 - WebP
 - SVG
+- TIFF/TIF (viewing + EXIF inspector)
 
 ## Development
 
