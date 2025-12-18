@@ -49,6 +49,21 @@ pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
         std::fs::metadata(path).map_err(|e| format!("Failed to read file metadata: {}", e))?;
     let size = metadata.len();
 
+    // SVG isn't supported by the `image` crate; treat it as display-only and return basic metadata.
+    if path
+        .extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|ext| ext.eq_ignore_ascii_case("svg"))
+    {
+        return Ok(ImageMetadata {
+            path: path.to_string_lossy().to_string(),
+            width: 0,
+            height: 0,
+            size,
+            format: "svg".to_string(),
+        });
+    }
+
     // Get image dimensions and format
     let img_reader =
         image::ImageReader::open(path).map_err(|e| format!("Failed to open image: {}", e))?;
