@@ -4,9 +4,6 @@
   import { viewer } from '../stores/viewer';
   import { ui } from '../stores/ui';
   import type { ImageFile } from '../types';
-  import { createEventDispatcher } from 'svelte';
-
-  const dispatch = createEventDispatcher();
 
   export let closeMenu: () => void;
 

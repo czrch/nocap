@@ -47,7 +47,7 @@ function createSettingsStore() {
   return {
     subscribe,
     setUiScale: (scale: UiScale) => {
-      update(state => {
+      update((state) => {
         const newState = { ...state, uiScale: scale };
         saveSettings(newState);
         return newState;

@@ -15,7 +15,7 @@ A minimal, cross-platform image viewer built with Tauri v2, Svelte, and Rust.
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v18 or later)
+- [Node.js](https://nodejs.org/) (v20.19.0 or later)
 - [Rust](https://www.rust-lang.org/tools/install) (latest stable)
 
 ### Build from Source
@@ -61,14 +61,14 @@ The built application will be in `src-tauri/target/release/bundle/`.
 
 ## Keyboard Shortcuts
 
-| Action | Shortcut |
-|--------|----------|
-| Next Image | `→` |
-| Previous Image | `←` |
-| Zoom In | `+` or `=` |
-| Zoom Out | `-` |
-| Reset Zoom | `0` |
-| Fit to Window | `F` |
+| Action         | Shortcut   |
+| -------------- | ---------- |
+| Next Image     | `→`        |
+| Previous Image | `←`        |
+| Zoom In        | `+` or `=` |
+| Zoom Out       | `-`        |
+| Reset Zoom     | `0`        |
+| Fit to Window  | `F`        |
 
 ## Supported Formats
 

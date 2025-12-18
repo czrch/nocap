@@ -21,6 +21,8 @@ Use the Wayland compatibility dev script:
 npm run tauri:dev:wayland
 ```
 
+**Note:** `npm run tauri:dev` auto-enables this workaround on Linux Wayland unless you set `NO_WAYLAND_WORKAROUND=1`.
+
 **Alternative Solution (X11 fallback):**
 If the primary fix doesn't work, use X11 compatibility mode:
 

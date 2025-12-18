@@ -13,12 +13,10 @@ function createUiStore() {
 
   return {
     subscribe,
-    openSettings: () => update(state => ({ ...state, settingsOpen: true })),
-    closeSettings: () => update(state => ({ ...state, settingsOpen: false })),
-    toggleSettings: () =>
-      update(state => ({ ...state, settingsOpen: !state.settingsOpen })),
+    openSettings: () => update((state) => ({ ...state, settingsOpen: true })),
+    closeSettings: () => update((state) => ({ ...state, settingsOpen: false })),
+    toggleSettings: () => update((state) => ({ ...state, settingsOpen: !state.settingsOpen })),
   };
 }
 
 export const ui = createUiStore();
-

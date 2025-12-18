@@ -15,9 +15,9 @@ function createViewerStore() {
 
   return {
     subscribe,
-    
+
     loadImage: (file: ImageFile) => {
-      update(state => ({
+      update((state) => ({
         ...state,
         currentImage: file,
         zoomLevel: 1.0,
@@ -27,9 +27,9 @@ function createViewerStore() {
       // Load all images in the same directory as the selected image.
       // Guard against out-of-order responses (e.g., user rapidly changes images).
       invoke<ImageFile[]>('get_adjacent_images', { currentPath: file.path })
-        .then(images => {
-          const index = images.findIndex(img => img.path === file.path);
-          update(state => {
+        .then((images) => {
+          const index = images.findIndex((img) => img.path === file.path);
+          update((state) => {
             if (state.currentImage?.path !== file.path) return state;
             return {
               ...state,
@@ -38,11 +38,11 @@ function createViewerStore() {
             };
           });
         })
-        .catch(err => console.error('Failed to load adjacent images:', err));
+        .catch((err) => console.error('Failed to load adjacent images:', err));
     },
 
     loadFolder: async (files: ImageFile[]) => {
-      update(state => ({
+      update((state) => ({
         ...state,
         imageList: files,
         currentImage: files.length > 0 ? files[0] : null,
@@ -53,9 +53,9 @@ function createViewerStore() {
     },
 
     nextImage: () => {
-      update(state => {
+      update((state) => {
         if (state.imageList.length === 0) return state;
-        
+
         const nextIndex = (state.currentIndex + 1) % state.imageList.length;
         return {
           ...state,
@@ -68,13 +68,12 @@ function createViewerStore() {
     },
 
     previousImage: () => {
-      update(state => {
+      update((state) => {
         if (state.imageList.length === 0) return state;
-        
-        const prevIndex = state.currentIndex === 0 
-          ? state.imageList.length - 1 
-          : state.currentIndex - 1;
-        
+
+        const prevIndex =
+          state.currentIndex === 0 ? state.imageList.length - 1 : state.currentIndex - 1;
+
         return {
           ...state,
           currentImage: state.imageList[prevIndex],
@@ -86,7 +85,7 @@ function createViewerStore() {
     },
 
     setZoom: (level: number) => {
-      update(state => ({
+      update((state) => ({
         ...state,
         zoomLevel: Math.max(0.1, Math.min(10, level)),
         fitToWindow: false,
@@ -94,7 +93,7 @@ function createViewerStore() {
     },
 
     zoomIn: () => {
-      update(state => ({
+      update((state) => ({
         ...state,
         zoomLevel: Math.min(10, state.zoomLevel * 1.2),
         fitToWindow: false,
@@ -102,7 +101,7 @@ function createViewerStore() {
     },
 
     zoomOut: () => {
-      update(state => ({
+      update((state) => ({
         ...state,
         zoomLevel: Math.max(0.1, state.zoomLevel / 1.2),
         fitToWindow: false,
@@ -110,7 +109,7 @@ function createViewerStore() {
     },
 
     resetZoom: () => {
-      update(state => ({
+      update((state) => ({
         ...state,
         zoomLevel: 1.0,
         fitToWindow: false,
@@ -118,7 +117,7 @@ function createViewerStore() {
     },
 
     toggleFitToWindow: () => {
-      update(state => ({
+      update((state) => ({
         ...state,
         fitToWindow: !state.fitToWindow,
         zoomLevel: state.fitToWindow ? 1.0 : state.zoomLevel,

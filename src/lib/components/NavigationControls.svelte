@@ -2,8 +2,6 @@
   import { viewer } from '../stores/viewer';
 
   $: hasImages = $viewer.imageList.length > 0;
-  $: isFirst = $viewer.currentIndex === 0;
-  $: isLast = $viewer.currentIndex === $viewer.imageList.length - 1;
   $: counter = hasImages 
     ? `${$viewer.currentIndex + 1} / ${$viewer.imageList.length}`
     : '0 / 0';
