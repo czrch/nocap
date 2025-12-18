@@ -1,39 +1,16 @@
 <script lang="ts">
-  import { invoke } from '@tauri-apps/api/core';
-  import { message, open } from '@tauri-apps/plugin-dialog';
+  import { pickImageFile, pickImageFolder } from '../actions/open';
   import { viewer } from '../stores/viewer';
   import { ui } from '../stores/ui';
-  import type { ImageFile } from '../types';
 
   export let closeMenu: () => void;
 
   async function openFile() {
     closeMenu();
     try {
-      const selected = await open({
-        multiple: false,
-        filters: [
-          {
-            name: 'Images',
-            extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'],
-          },
-        ],
-      });
-
-      if (selected && typeof selected === 'string') {
-        const pathParts = selected.split(/[/\\]/);
-        const filename = pathParts[pathParts.length - 1];
-        const extensionMatch = filename.match(/\.([^.]+)$/);
-        const extension = extensionMatch ? extensionMatch[1].toLowerCase() : '';
-
-        const file: ImageFile = {
-          path: selected,
-          filename: filename,
-          extension: extension,
-        };
-
-        viewer.loadImage(file);
-      }
+      const file = await pickImageFile();
+      if (!file) return;
+      viewer.loadImage(file);
     } catch (err) {
       console.error('Failed to open file:', err);
     }
@@ -42,25 +19,9 @@
   async function openFolder() {
     closeMenu();
     try {
-      const selected = await open({
-        directory: true,
-        multiple: false,
-      });
-
-      if (selected && typeof selected === 'string') {
-        const images = await invoke<ImageFile[]>('scan_folder_for_images', {
-          folderPath: selected,
-        });
-
-        if (images && images.length > 0) {
-          viewer.loadFolder(images);
-        } else {
-          await message('No images found in the selected folder.', {
-            title: 'nocap',
-            kind: 'info',
-          });
-        }
-      }
+      const images = await pickImageFolder();
+      if (!images) return;
+      viewer.loadFolder(images);
     } catch (err) {
       console.error('Failed to open folder:', err);
     }
