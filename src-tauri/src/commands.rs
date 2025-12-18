@@ -1,5 +1,5 @@
-use crate::models::{ImageFile, ImageMetadata};
-use crate::utils::{extract_image_info, scan_directory_for_images};
+use crate::models::{ExifSummary, ImageFile, ImageMetadata};
+use crate::utils::{extract_exif_summary, extract_image_info, scan_directory_for_images};
 use std::path::Path;
 
 /// Get all images in the same directory as the current image path
@@ -44,6 +44,17 @@ pub async fn get_image_metadata(path: String) -> Result<ImageMetadata, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let path_ref = Path::new(&path);
         extract_image_info(path_ref)
+    })
+    .await
+    .map_err(|e| format!("Worker thread error: {}", e))?
+}
+
+/// Extract EXIF metadata summary from an image file (when present)
+#[tauri::command]
+pub async fn get_exif_summary(path: String) -> Result<Option<ExifSummary>, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let path_ref = Path::new(&path);
+        extract_exif_summary(path_ref)
     })
     .await
     .map_err(|e| format!("Worker thread error: {}", e))?

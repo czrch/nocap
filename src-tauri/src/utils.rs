@@ -1,4 +1,7 @@
-use crate::models::{ImageFile, ImageMetadata};
+use crate::models::{ExifSummary, ImageFile, ImageMetadata};
+use exif::{In, Tag};
+use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 
 /// Check if a file path has a supported image extension
@@ -84,4 +87,73 @@ pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
         size,
         format: format!("{:?}", format).to_lowercase(),
     })
+}
+
+fn is_supported_exif_container(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|ext| matches!(ext.to_lowercase().as_str(), "jpg" | "jpeg" | "tif" | "tiff"))
+}
+
+fn exif_field_string(exif: &exif::Exif, tag: Tag) -> Option<String> {
+    exif.get_field(tag, In::PRIMARY)
+        .map(|field| field.display_value().with_unit(exif).to_string())
+}
+
+fn exif_orientation_string(exif: &exif::Exif) -> Option<String> {
+    let field = exif
+        .get_field(Tag::Orientation, In::PRIMARY)
+        .or_else(|| exif.get_field(Tag::Orientation, In::THUMBNAIL))?;
+
+    let value = field.value.get_uint(0)?;
+    Some(match value {
+        1 => "normal".to_string(),
+        2 => "mirrored".to_string(),
+        3 => "rotated 180°".to_string(),
+        4 => "mirrored upside-down".to_string(),
+        5 => "mirrored, rotated 90°".to_string(),
+        6 => "rotated 90°".to_string(),
+        7 => "mirrored, rotated 270°".to_string(),
+        8 => "rotated 270°".to_string(),
+        other => format!("{other}"),
+    })
+}
+
+/// Extract a small EXIF summary from an image file.
+///
+/// Returns `Ok(None)` when the file doesn't support EXIF (by extension) or no EXIF is found.
+pub fn extract_exif_summary(path: &Path) -> Result<Option<ExifSummary>, String> {
+    if !is_supported_exif_container(path) {
+        return Ok(None);
+    }
+
+    let file = File::open(path).map_err(|e| format!("Failed to open file for EXIF: {}", e))?;
+    let mut bufreader = BufReader::new(&file);
+
+    let exif = match exif::Reader::new().read_from_container(&mut bufreader) {
+        Ok(exif) => exif,
+        Err(exif::Error::Io(e)) => {
+            return Err(format!("Failed to read EXIF: {}", e));
+        }
+        Err(_) => {
+            // Missing or malformed EXIF is treated as "no EXIF" for a minimal viewer.
+            return Ok(None);
+        }
+    };
+
+    let date_taken = exif_field_string(&exif, Tag::DateTimeOriginal)
+        .or_else(|| exif_field_string(&exif, Tag::DateTimeDigitized))
+        .or_else(|| exif_field_string(&exif, Tag::DateTime));
+
+    Ok(Some(ExifSummary {
+        date_taken,
+        camera_make: exif_field_string(&exif, Tag::Make),
+        camera_model: exif_field_string(&exif, Tag::Model),
+        lens_model: exif_field_string(&exif, Tag::LensModel),
+        author: exif_field_string(&exif, Tag::Artist),
+        description: exif_field_string(&exif, Tag::ImageDescription),
+        copyright: exif_field_string(&exif, Tag::Copyright),
+        software: exif_field_string(&exif, Tag::Software),
+        orientation: exif_orientation_string(&exif),
+    }))
 }

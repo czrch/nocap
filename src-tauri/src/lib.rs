@@ -10,6 +10,7 @@ pub fn run() {
             commands::get_adjacent_images,
             commands::scan_folder_for_images,
             commands::get_image_metadata,
+            commands::get_exif_summary,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
