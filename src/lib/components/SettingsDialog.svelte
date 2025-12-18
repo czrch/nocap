@@ -51,6 +51,7 @@
 {#if open}
   <div
     class="overlay"
+    style={`--ui-scale: ${$settings.uiScale / 100};`}
     role="button"
     tabindex="0"
     on:click={handleOverlayClick}
@@ -93,6 +94,7 @@
     align-items: flex-start;
     justify-content: center;
     padding: 64px 16px 16px;
+    overflow: auto;
     z-index: 100;
   }
 
@@ -103,6 +105,8 @@
     border-radius: 10px;
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
     overflow: hidden;
+    transform: scale(var(--ui-scale, 1));
+    transform-origin: top center;
   }
 
   .header {
