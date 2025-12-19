@@ -6,6 +6,7 @@
   import { pickImageFile, pickImageFolder } from './lib/actions/open';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
+  import ViewerTopBar from './lib/components/ViewerTopBar.svelte';
   import NavigationControls from './lib/components/NavigationControls.svelte';
   import InspectorPanel from './lib/components/InspectorPanel.svelte';
   import ContextMenu from './lib/components/ContextMenu.svelte';
@@ -100,6 +101,7 @@
 
 <div class="app-container" style="zoom: {$settings.uiScale}%">
   <TitleBar />
+  <ViewerTopBar />
 
   <!-- Main viewer area -->
   <div class="viewer-container" on:contextmenu={handleContextMenu} role="main">

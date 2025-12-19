@@ -218,6 +218,23 @@ function createMetadataStore() {
       }));
     },
 
+    moveUserMetadata: (fromPath: string, toPath: string) => {
+      const map = loadUserMetadataMap();
+      const from = coerceUserMetadata(map[fromPath]);
+      const next = { ...(map as Record<string, UserMetadata>) };
+      delete next[fromPath];
+      next[toPath] = from;
+      saveUserMetadataMap(next);
+    },
+
+    copyUserMetadata: (fromPath: string, toPath: string) => {
+      const map = loadUserMetadataMap();
+      const from = coerceUserMetadata(map[fromPath]);
+      const next = { ...(map as Record<string, UserMetadata>) };
+      next[toPath] = from;
+      saveUserMetadataMap(next);
+    },
+
     reset: () => set(initialState),
   };
 }

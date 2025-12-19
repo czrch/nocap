@@ -124,6 +124,23 @@ function createViewerStore() {
       }));
     },
 
+    replaceCurrentImage: (file: ImageFile) => {
+      update((state) => {
+        if (!state.currentImage) return state;
+
+        const nextList =
+          state.currentIndex >= 0 && state.currentIndex < state.imageList.length
+            ? state.imageList.map((img, idx) => (idx === state.currentIndex ? file : img))
+            : state.imageList.map((img) => (img.path === state.currentImage?.path ? file : img));
+
+        return {
+          ...state,
+          currentImage: file,
+          imageList: nextList,
+        };
+      });
+    },
+
     reset: () => set(initialState),
   };
 }

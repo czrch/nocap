@@ -7,31 +7,8 @@
     value: string;
   };
 
-  function formatBytes(bytes: number): string {
-    if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
-    const units = ['B', 'KB', 'MB', 'GB', 'TB'] as const;
-    const unitIndex = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
-    const value = bytes / Math.pow(1024, unitIndex);
-    const formatted = value >= 10 || unitIndex === 0 ? value.toFixed(0) : value.toFixed(1);
-    return `${formatted} ${units[unitIndex]}`;
-  }
-
   $: exif = $metadata.exif;
-  $: image = $metadata.image;
   $: filename = $viewer.currentImage?.filename ?? '';
-  $: extension = $viewer.currentImage?.extension ?? '';
-
-  $: typeLabel = image?.format
-    ? extension
-      ? `${image.format.toUpperCase()} (.${extension})`
-      : image.format.toUpperCase()
-    : extension
-      ? `.${extension}`
-      : '—';
-
-  $: sizeLabel = image ? `${formatBytes(image.size)} (${image.size.toLocaleString()} B)` : '—';
-  $: resolutionLabel =
-    image && image.width > 0 && image.height > 0 ? `${image.width} × ${image.height}` : '—';
 
   $: tagsText = $metadata.userDraft.tags.join(', ');
 
@@ -81,140 +58,131 @@
   </div>
 
   <div class="content">
-    {#if $metadata.error}
-      <div class="state error">{$metadata.error}</div>
-    {/if}
-
-    <div class="section">
-      <div class="section-title">File</div>
-      {#if $metadata.loading && !image}
-        <div class="state">Loading…</div>
-      {:else if image}
-        <dl class="rows">
-          <div class="row">
-            <dt class="label">Type</dt>
-            <dd class="value">{typeLabel}</dd>
-          </div>
-          <div class="row">
-            <dt class="label">Size</dt>
-            <dd class="value">{sizeLabel}</dd>
-          </div>
-          <div class="row">
-            <dt class="label">Resolution</dt>
-            <dd class="value">{resolutionLabel}</dd>
-          </div>
-        </dl>
-      {:else}
-        <div class="state">No file info.</div>
+    {#if !$viewer.currentImage}
+      <div class="state">Open an image to view and edit metadata.</div>
+    {:else}
+      {#if $metadata.error}
+        <div class="state error">{$metadata.error}</div>
       {/if}
-    </div>
 
-    <div class="section">
-      <div class="section-title">Details</div>
-      <div class="field">
-        <label class="field-label" for="meta-description">Description</label>
-        <textarea
-          id="meta-description"
-          class="textarea"
-          rows="3"
-          value={$metadata.userDraft.description}
-          on:input={(e) =>
-            metadata.updateUserDraft({ description: (e.target as HTMLTextAreaElement).value })}
-          placeholder="Add a description…"
-        ></textarea>
-      </div>
-
-      <div class="field">
-        <label class="field-label" for="meta-tags">Tags</label>
-        <input
-          id="meta-tags"
-          class="input"
-          type="text"
-          value={tagsText}
-          on:input={handleTagsInput}
-          placeholder="tag1, tag2, …"
-        />
-      </div>
-
-      <div class="field-row">
-        <div class="field">
-          <label class="field-label" for="meta-rating">Rating</label>
-          <select
-            id="meta-rating"
-            class="select"
-            value={$metadata.userDraft.rating ?? ''}
-            on:change={handleRatingChange}
-          >
-            <option value="">—</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-          </select>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Details</div>
+          {#if $metadata.userDirty}
+            <div class="badge" title="Unsaved changes">Unsaved</div>
+          {/if}
         </div>
 
         <div class="field">
-          <label class="field-label" for="meta-date">Date</label>
+          <label class="field-label" for="meta-description">Description</label>
+          <textarea
+            id="meta-description"
+            class="textarea"
+            rows="3"
+            value={$metadata.userDraft.description}
+            on:input={(e) =>
+              metadata.updateUserDraft({ description: (e.target as HTMLTextAreaElement).value })}
+            placeholder="Add a description…"
+          ></textarea>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="meta-tags">Tags</label>
           <input
-            id="meta-date"
+            id="meta-tags"
             class="input"
-            type="date"
-            value={$metadata.userDraft.date ?? ''}
-            on:change={handleDateChange}
+            type="text"
+            value={tagsText}
+            on:input={handleTagsInput}
+            placeholder="tag1, tag2, …"
           />
         </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label class="field-label" for="meta-rating">Rating</label>
+            <select
+              id="meta-rating"
+              class="select"
+              value={$metadata.userDraft.rating ?? ''}
+              on:change={handleRatingChange}
+            >
+              <option value="">—</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="meta-date">Date</label>
+            <input
+              id="meta-date"
+              class="input"
+              type="date"
+              value={$metadata.userDraft.date ?? ''}
+              on:change={handleDateChange}
+            />
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="meta-author">Author</label>
+          <input
+            id="meta-author"
+            class="input"
+            type="text"
+            value={$metadata.userDraft.author}
+            on:input={(e) =>
+              metadata.updateUserDraft({ author: (e.target as HTMLInputElement).value })}
+            placeholder="Author…"
+          />
+        </div>
+
+        <div class="actions">
+          <button
+            type="button"
+            class="button"
+            on:click={() => metadata.discardUserDraft()}
+            disabled={!$metadata.userDirty}
+          >
+            Discard
+          </button>
+          <button
+            type="button"
+            class="button primary"
+            on:click={() => metadata.saveUserDraft()}
+            disabled={!$metadata.userDirty}
+          >
+            Save
+          </button>
+        </div>
       </div>
 
-      <div class="field">
-        <label class="field-label" for="meta-author">Author</label>
-        <input
-          id="meta-author"
-          class="input"
-          type="text"
-          value={$metadata.userDraft.author}
-          on:input={(e) => metadata.updateUserDraft({ author: (e.target as HTMLInputElement).value })}
-          placeholder="Author…"
-        />
-      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">EXIF</div>
+          {#if $metadata.loading && !exif}
+            <div class="badge subtle">Loading</div>
+          {/if}
+        </div>
 
-      <div class="actions">
-        <button
-          type="button"
-          class="button"
-          on:click={() => metadata.discardUserDraft()}
-          disabled={!$metadata.userDirty}
-        >
-          Discard
-        </button>
-        <button
-          type="button"
-          class="button primary"
-          on:click={() => metadata.saveUserDraft()}
-          disabled={!$metadata.userDirty}
-        >
-          Save
-        </button>
+        {#if rows.length === 0}
+          <div class="state">No EXIF data found.</div>
+        {:else}
+          <dl class="rows">
+            {#each rows as row (row.label)}
+              <div class="row">
+                <dt class="label">{row.label}</dt>
+                <dd class="value">{row.value}</dd>
+              </div>
+            {/each}
+          </dl>
+        {/if}
       </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">EXIF</div>
-      {#if $metadata.loading && !exif}
-        <div class="state">Loading…</div>
-      {:else if rows.length === 0}
-        <div class="state">No EXIF data found.</div>
-      {:else}
-        <dl class="rows">
-          {#each rows as row (row.label)}
-            <div class="row">
-              <dt class="label">{row.label}</dt>
-              <dd class="value">{row.value}</dd>
-            </div>
-          {/each}
-        </dl>
-      {/if}
-    </div>
+    {/if}
   </div>
 </aside>
 
@@ -254,7 +222,7 @@
     padding: 0.85rem;
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 0.9rem;
   }
 
   .state {
@@ -297,13 +265,43 @@
     word-break: break-word;
   }
 
-  .section-title {
+  .card {
+    border: 1px solid #232323;
+    background: #121212;
+    border-radius: 12px;
+    padding: 0.85rem;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .card-title {
     font-size: 0.75rem;
     color: #a8a8a8;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     user-select: none;
-    margin-bottom: 0.7rem;
+  }
+
+  .badge {
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    border: 1px solid #3a3a3a;
+    background: #1a1a1a;
+    color: #e6e6e6;
+    font-size: 0.72rem;
+    user-select: none;
+  }
+
+  .badge.subtle {
+    color: #b0b0b0;
+    border-color: #2a2a2a;
+    background: #141414;
   }
 
   .field {
