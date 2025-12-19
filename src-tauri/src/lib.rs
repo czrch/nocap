@@ -11,6 +11,7 @@ pub fn run() {
             commands::get_adjacent_images,
             commands::scan_folder_for_images,
             commands::open_project,
+            commands::scan_directory,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
