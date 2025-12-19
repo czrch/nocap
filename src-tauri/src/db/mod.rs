@@ -4,7 +4,6 @@ use rusqlite::{Connection, Result};
 use std::path::Path;
 
 /// Initialize or open a database connection for a project
-#[allow(dead_code)]
 pub fn open_project_db(project_path: &Path) -> Result<Connection> {
     let nocap_dir = project_path.join(".nocap");
     std::fs::create_dir_all(&nocap_dir)

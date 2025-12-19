@@ -2,7 +2,6 @@ use rusqlite::{Connection, Result};
 
 const SCHEMA_VERSION: i32 = 1;
 
-#[allow(dead_code)]
 pub fn init_schema(conn: &Connection) -> Result<()> {
     // Enable foreign keys
     conn.execute("PRAGMA foreign_keys = ON", [])?;
