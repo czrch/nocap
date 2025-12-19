@@ -1,247 +1,62 @@
 # Agent Guidelines: nocap
 
-## Project Overview
+Minimal, cross-platform image viewer. Keep it small, fast, and clean.
 
-**Name**: nocap  
-**Type**: Cross-platform desktop image viewer  
-**Stack**: Tauri v2.9 (Rust) + Svelte 4 + TypeScript  
-**License**: GPL-3.0  
-**Status**: Initial development phase  
+## Stack (Current)
 
-**Purpose**: Minimal, sleek image viewer with essential features only. No bloat, clean code, modern architecture.
+- Tauri v2 (Rust)
+- Svelte 5 + TypeScript + Vite
 
-## Philosophy
+## Core Goals
 
-### Design Principles
-1. **Minimalism First**: Only implement what users actually need. Resist feature creep.
-2. **Performance**: Leverage Rust's speed. Keep frontend lightweight (Svelte chosen for this).
-3. **Cross-Platform**: Code must work on Linux, macOS, Windows without platform-specific hacks.
-4. **Clean Architecture**: Separation of concerns - Rust handles system/files, Svelte handles UI.
-5. **User Experience**: Fast startup, smooth interactions, intuitive controls, no configuration complexity.
+- Minimalism first (avoid feature creep).
+- Cross-platform correctness (Linux/macOS/Windows).
+- Rust does filesystem/system work; Svelte does UI/state.
+- Small, reviewable changes.
 
-### Development Values
-- **Incremental Progress**: Small, atomic commits over large changesets
-- **Code Quality**: Readable > clever. Self-documenting code preferred.
-- **Modern Practices**: Use latest stable tools, follow ecosystem conventions
-- **Documentation**: Code explains "how", comments explain "why", docs explain "what"
+## Commit-Oriented Development
 
-## Project Structure
+- Plan features as **a sequence of small commits** (vertical slices when possible).
+- Each commit should be **buildable** and **validation-clean**.
+- Don’t mix unrelated refactors/formatting with feature work.
 
-```
-nocap/
-├── docs/              # Technical documentation, plans
-├── src/               # Frontend (Svelte + TypeScript)
-│   ├── lib/
-│   │   ├── components/  # Svelte UI components
-│   │   ├── stores/      # State management
-│   │   └── types.ts     # TypeScript interfaces
-│   ├── App.svelte       # Root component
-│   ├── main.ts          # Entry point
-│   └── app.css          # Global styles
-├── src-tauri/         # Backend (Rust)
-│   ├── src/
-│   │   ├── main.rs      # Tauri entry, window setup
-│   │   ├── commands.rs  # IPC command handlers
-│   │   ├── models.rs    # Data structures
-│   │   └── utils.rs     # Helper functions
-│   ├── capabilities/    # Tauri permissions
-│   ├── Cargo.toml       # Rust deps
-│   └── tauri.conf.json  # App config
-├── public/            # Static assets
-├── AGENTS.md          # This file
-├── README.md          # User-facing docs
-└── LICENSE            # GPL-3.0
-```
+### Commit messages
 
-## Git Conventions
+- Must use lowercase prefixes: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `perf:`, `ci:`, `build:`, `style:`, `revert:`
+- Format: `<type>: <description>` (≤72 chars, lowercase, imperative)
 
-### Branch Naming
-- `feature/{name}` - New features (e.g., `feature/thumbnail-view`)
-- `fix/{name}` - Bug fixes (e.g., `fix/zoom-reset`)
-- `docs/{name}` - Documentation (e.g., `docs/api-reference`)
-- `chore/{name}` - Maintenance (e.g., `chore/update-deps`)
-- `refactor/{name}` - Code improvements (e.g., `refactor/image-loading`)
-- `test/{name}` - Tests (e.g., `test/file-scanner`)
-- `perf/{name}` - Performance (e.g., `perf/caching`)
-- `hotfix/{name}` - Urgent fixes (e.g., `hotfix/crash-on-startup`)
+## Required Validation (Before Every Commit)
 
-Use kebab-case. Keep names concise, descriptive.
-
-### Commit Messages
-
-**CRITICAL: All commit messages MUST use lowercase prefixes**
-
-Format: `<type>: <description>`
-
-**Valid types** (lowercase only):
-- `feat:` - New features
-- `fix:` - Bug fixes
-- `docs:` - Documentation changes
-- `chore:` - Maintenance, deps, config
-- `refactor:` - Code restructuring (no behavior change)
-- `test:` - Add/update tests
-- `perf:` - Performance improvements
-- `ci:` - CI/CD changes
-- `build:` - Build system changes
-- `style:` - Formatting, whitespace
-- `revert:` - Revert previous commit
-
-**Examples**:
-```
-feat: add zoom controls to toolbar
-fix: handle empty image directories gracefully
-docs: update readme with build instructions
-chore: bump tauri to v2.9.1
-refactor: extract metadata parsing to utils
-```
-
-**Rules**:
-- Subject line: lowercase, imperative mood, ≤72 chars
-- Scope optional: `feat(ui): add navigation arrows`
-- One logical change per commit
-- Don't mix refactors with features
-- Avoid "drive-by" formatting in unrelated files
-
-## Code Standards
-
-### Rust (Backend)
-- **Style**: `cargo fmt` (rustfmt) before every commit
-- **Linting**: `cargo clippy` must pass with zero warnings
-- **Error Handling**: Use `Result<T, String>` for commands, descriptive error messages
-- **Naming**: snake_case for functions/variables, PascalCase for types
-- **Documentation**: Doc comments (`///`) for public items
-- **Dependencies**: Minimize crates, prefer std library when reasonable
-
-### TypeScript/Svelte (Frontend)
-- **Style**: Consistent with project (2-space indent, single quotes where applicable)
-- **Types**: No `any`, explicit types for function signatures
-- **Naming**: camelCase for functions/variables, PascalCase for components/interfaces
-- **Components**: One component per file, named exports
-- **Stores**: Centralized in `lib/stores/`, immutable updates
-- **Documentation**: JSDoc for complex functions
-
-## Implementation Workflow
-
-### Before Starting Work
-1. Read `docs/implementation_plan.md` for current phase
-2. Understand the specific step you're implementing
-3. Check existing code to maintain consistency
-4. Verify you have correct context (file paths, dependencies)
-
-### During Implementation
-1. **One step at a time**: Follow implementation plan sequentially
-2. **Create files carefully**: Use exact paths from plan
-3. **Test incrementally**: Verify after each logical unit
-4. **Commit atomically**: One feature/fix per commit
-5. **Write clear commits**: Follow git conventions exactly
-
-### After Implementation
-1. **Verify**: Run verification command from plan step
-2. **Test manually**: Check functionality works as expected
-3. **Check style**: Run formatters (`cargo fmt`, etc.)
-4. **Review changes**: Ensure no unintended modifications
-5. **Commit**: Use proper conventional commit message
-
-## Agent-Specific Rules
-
-### File Operations
-- **Read before modify**: Always read current file state before edits
-- **Use SEARCH/REPLACE**: For targeted changes, use exact matching
-- **Verify paths**: Double-check file paths against project structure
-- **Create directories**: Ensure parent dirs exist before file creation
-
-### Tauri-Specific
-- **Commands**: All backend functions called from frontend must be registered in `main.rs`
-- **Permissions**: Update `capabilities/default.json` when adding plugin features
-- **Serialization**: Use `#[derive(Serialize, Deserialize)]` for data crossing IPC boundary
-- **Asset Protocol**: Use `asset://` protocol for local file access in frontend
-
-### Svelte-Specific
-- **Reactivity**: Use `$:` for derived values, stores for global state
-- **Components**: Props down, events up (no prop drilling)
-- **Lifecycle**: `onMount` for initialization, cleanup in `onDestroy`
-- **Stores**: Subscribe with `$storeName` syntax, avoid manual subscriptions
-
-### Common Pitfalls
-- ❌ Forgetting to register Tauri commands in `main.rs`
-- ❌ Using uppercase in commit messages (must be lowercase)
-- ❌ Not handling errors in async operations
-- ❌ Hardcoding file paths (use Tauri path APIs)
-- ❌ Committing formatted code separately from functional changes
-- ❌ Adding features not in the current implementation plan
-
-## Testing Strategy
-
-### Current Phase (MVP)
-Manual testing only. Focus on:
-- Core functionality works
-- No crashes on edge cases
-- Cross-platform compatibility
-- Performance is acceptable
-
-### Future Phases
-- **Unit tests**: Rust utility functions, TypeScript helpers
-- **Component tests**: Svelte components with @testing-library/svelte
-- **Integration tests**: Tauri commands via test harness
-- **E2E tests**: Full application flows
-
-## Communication
-
-### When to Ask Questions
-- Requirements are ambiguous
-- Implementation approach unclear
-- Conflicts with existing code
-- Breaking changes needed
-- Security/performance concerns
-
-### When to Proceed
-- Implementation plan is clear
-- Step matches current phase
-- No conflicts with existing code
-- Standard patterns apply
-
-## Quick Reference
-
-### Build Commands
+Frontend:
 ```bash
-npm install          # Install frontend deps
-npm run dev          # Dev server (Vite only)
-npm run tauri dev    # Full app in dev mode
-npm run tauri build  # Production build
-cargo fmt            # Format Rust code
-cargo clippy         # Lint Rust code
+npm run format:check
+npm run lint
+npm run check
 ```
 
-### Platform-Specific Notes
-
-#### Linux (Wayland)
-When running on Wayland, ensure the following environment variables are set:
+Backend:
 ```bash
-# For native Wayland support
-export GDK_BACKEND=wayland
-export WAYLAND_DISPLAY=wayland-1
-
-# Run the app
-npm run tauri dev
+cd src-tauri
+cargo fmt --check
+cargo clippy --all-targets --all-features
 ```
 
-If you encounter display protocol errors, verify your Wayland compositor is running and `$WAYLAND_DISPLAY` is properly set.
+## Project Rules (Practical)
 
-### Key Files
-- `docs/implementation_plan.md` - Full implementation guide
-- `src-tauri/tauri.conf.json` - App configuration
-- `src-tauri/capabilities/default.json` - Permissions
-- `src/lib/stores/viewer.ts` - Application state
-- `src/lib/types.ts` - TypeScript interfaces
+Tauri:
 
-### Important Concepts
-- **Tauri Commands**: Rust functions exposed to frontend via `#[tauri::command]`
-- **IPC**: Communication between Rust and Svelte via `invoke()`
-- **Stores**: Svelte's reactive state management (writable, readable, derived)
-- **Capabilities**: Tauri v2's permission system (required for fs, dialog, etc.)
+- Register all `#[tauri::command]` functions in `src-tauri/src/lib.rs`.
+- If you add permissions/plugins, update `src-tauri/capabilities/default.json`.
+- IPC types must derive `Serialize`/`Deserialize`.
 
----
+Frontend:
 
-**Last Updated**: 2025-12-16  
-**Plan Version**: Initial MVP  
-**Target Tauri**: v2.9+
+- No `any`; prefer explicit types for exported functions and stores.
+- Stores live in `src/lib/stores/` and should guard against stale async responses.
+- Keep components small; props down, events up.
+
+Testing (Current Phase)
+
+- Manual testing only; keep changes easy to verify.
+
+**Last Updated**: 2025-12-18
