@@ -4,14 +4,6 @@ export interface ImageFile {
   extension: string;
 }
 
-export interface ImageMetadata {
-  path: string;
-  width: number;
-  height: number;
-  size: number;
-  format: string;
-}
-
 export interface ViewerState {
   currentImage: ImageFile | null;
   imageList: ImageFile[];

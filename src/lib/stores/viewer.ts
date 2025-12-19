@@ -11,7 +11,7 @@ const initialState: ViewerState = {
 };
 
 function createViewerStore() {
-  const { subscribe, set, update } = writable<ViewerState>(initialState);
+  const { subscribe, update } = writable<ViewerState>(initialState);
 
   return {
     subscribe,
@@ -123,8 +123,6 @@ function createViewerStore() {
         zoomLevel: state.fitToWindow ? 1.0 : state.zoomLevel,
       }));
     },
-
-    reset: () => set(initialState),
   };
 }
 
