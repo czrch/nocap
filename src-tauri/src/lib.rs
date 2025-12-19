@@ -9,7 +9,6 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_adjacent_images,
             commands::scan_folder_for_images,
-            commands::get_image_metadata,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

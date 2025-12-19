@@ -1,5 +1,5 @@
-use crate::models::{ImageFile, ImageMetadata};
-use crate::utils::{extract_image_info, scan_directory_for_images};
+use crate::models::ImageFile;
+use crate::utils::scan_directory_for_images;
 use std::path::Path;
 
 /// Get all images in the same directory as the current image path
@@ -33,17 +33,6 @@ pub async fn scan_folder_for_images(folder_path: String) -> Result<Vec<ImageFile
 
         let images = scan_directory_for_images(path);
         Ok(images)
-    })
-    .await
-    .map_err(|e| format!("Worker thread error: {}", e))?
-}
-
-/// Extract metadata from an image file
-#[tauri::command]
-pub async fn get_image_metadata(path: String) -> Result<ImageMetadata, String> {
-    tauri::async_runtime::spawn_blocking(move || {
-        let path_ref = Path::new(&path);
-        extract_image_info(path_ref)
     })
     .await
     .map_err(|e| format!("Worker thread error: {}", e))?
