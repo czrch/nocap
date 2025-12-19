@@ -45,6 +45,21 @@ pub fn scan_directory_for_images(dir_path: &Path) -> Vec<ImageFile> {
     images
 }
 
+pub fn image_file_from_path(path: &Path) -> Option<ImageFile> {
+    let filename = path.file_name()?.to_str()?.to_string();
+    let extension = path
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or_default()
+        .to_lowercase();
+
+    Some(ImageFile {
+        path: path.to_string_lossy().to_string(),
+        filename,
+        extension,
+    })
+}
+
 /// Extract image metadata using the image crate
 pub fn extract_image_info(path: &Path) -> Result<ImageMetadata, String> {
     // Get file size

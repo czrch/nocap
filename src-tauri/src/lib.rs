@@ -11,6 +11,8 @@ pub fn run() {
             commands::scan_folder_for_images,
             commands::get_image_metadata,
             commands::get_exif_summary,
+            commands::rename_image_file,
+            commands::save_as_copy,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
