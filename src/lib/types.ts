@@ -24,6 +24,14 @@ export interface ExifSummary {
   orientation: string | null;
 }
 
+export interface UserMetadata {
+  description: string;
+  tags: string[];
+  rating: number | null;
+  author: string;
+  date: string | null; // YYYY-MM-DD
+}
+
 export interface ViewerState {
   currentImage: ImageFile | null;
   imageList: ImageFile[];

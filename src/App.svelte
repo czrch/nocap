@@ -15,16 +15,16 @@
   let contextMenuX = 0;
   let contextMenuY = 0;
   let showContextMenu = false;
-  let lastExifPath: string | null = null;
+  let lastMetadataPath: string | null = null;
   
   $: if ($viewer.currentImage) {
     showWelcome = false;
   }
 
   $: currentPath = $viewer.currentImage?.path ?? null;
-  $: if (currentPath !== lastExifPath) {
-    lastExifPath = currentPath;
-    metadata.loadExif(currentPath);
+  $: if (currentPath !== lastMetadataPath) {
+    lastMetadataPath = currentPath;
+    metadata.load(currentPath);
   }
 
   async function openFile() {
@@ -56,7 +56,11 @@
 
   function handleKeydown(event: KeyboardEvent) {
     // Ignore if typing in an input field
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+    if (
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLSelectElement
+    ) {
       return;
     }
 
