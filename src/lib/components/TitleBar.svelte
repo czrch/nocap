@@ -17,24 +17,10 @@
   onMount(async () => {
     if (!appWindow) return;
 
-    try {
-      await appWindow.setShadow(true);
-    } catch {
-      // setShadow is platform-specific (Linux unsupported); ignore.
-    }
-
-    try {
-      isMaximized = await appWindow.isMaximized();
-    } catch {
-      isMaximized = false;
-    }
+    isMaximized = await appWindow.isMaximized();
 
     unlistenResize = await appWindow.listen('tauri://resize', async () => {
-      try {
-        isMaximized = await appWindow.isMaximized();
-      } catch {
-        isMaximized = false;
-      }
+      isMaximized = await appWindow.isMaximized();
     });
   });
 
@@ -57,29 +43,8 @@
 
   async function toggleMaximize() {
     if (!appWindow) return;
-    try {
-      await appWindow.toggleMaximize();
-    } catch {
-      let maximized = false;
-      try {
-        maximized = await appWindow.isMaximized();
-      } catch {
-        maximized = false;
-      }
-
-      try {
-        if (maximized) await appWindow.unmaximize();
-        else await appWindow.maximize();
-      } catch {
-        // ignored
-      }
-    }
-
-    try {
-      isMaximized = await appWindow.isMaximized();
-    } catch {
-      isMaximized = false;
-    }
+    await appWindow.toggleMaximize();
+    isMaximized = await appWindow.isMaximized();
   }
 
   async function close() {
