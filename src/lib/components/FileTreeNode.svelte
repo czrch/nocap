@@ -6,7 +6,7 @@
   export let level = 0;
   export let expanded: Set<string>;
 
-  const dispatch = createEventDispatcher<{ toggle: string; select: string }>();
+  const dispatch = createEventDispatcher<{ toggle: string; select: FsEntry }>();
 
   const isExpanded = () => expanded.has(entry.path);
 
@@ -16,7 +16,7 @@
       return;
     }
 
-    dispatch('select', entry.path);
+    dispatch('select', entry);
   }
 </script>
 

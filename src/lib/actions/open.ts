@@ -1,21 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { message, open } from '@tauri-apps/plugin-dialog';
 import type { ImageFile } from '../types';
-
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'] as const;
-
-function imageFileFromPath(path: string): ImageFile {
-  const pathParts = path.split(/[/\\]/);
-  const filename = pathParts[pathParts.length - 1] ?? path;
-  const extensionMatch = filename.match(/\.([^.]+)$/);
-  const extension = extensionMatch ? extensionMatch[1].toLowerCase() : '';
-
-  return {
-    path,
-    filename,
-    extension,
-  };
-}
+import { IMAGE_EXTENSIONS, imageFileFromPath } from '../utils/images';
 
 export async function pickImageFile(): Promise<ImageFile | null> {
   const selected = await open({

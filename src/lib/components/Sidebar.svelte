@@ -1,13 +1,19 @@
 <script lang="ts">
   import FileTreeNode from './FileTreeNode.svelte';
+  import type { FsEntry } from '../types';
   import { fileTree } from '../stores/fileTree';
+  import { viewer } from '../stores/viewer';
+  import { imageFileFromPath, isSupportedImage } from '../utils/images';
 
   function handleToggle(event: CustomEvent<string>) {
     fileTree.toggle(event.detail);
   }
 
-  function handleSelect(event: CustomEvent<string>) {
-    fileTree.toggle(event.detail);
+  function handleSelect(event: CustomEvent<FsEntry>) {
+    const entry = event.detail;
+    if (entry.kind !== 'file') return;
+    if (!isSupportedImage(entry.path)) return;
+    viewer.loadImage(imageFileFromPath(entry.path));
   }
 </script>
 
