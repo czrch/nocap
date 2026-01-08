@@ -2,12 +2,14 @@
   import { viewer } from './lib/stores/viewer';
   import { ui } from './lib/stores/ui';
   import { settings } from './lib/stores/settings';
-  import { pickImageFile, pickImageFolder } from './lib/actions/open';
+  import { fileTree } from './lib/stores/fileTree';
+  import { pickFolderPath, pickImageFile, scanFolderForImages } from './lib/actions/open';
   import ImageViewer from './lib/components/ImageViewer.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
   import NavigationControls from './lib/components/NavigationControls.svelte';
   import ContextMenu from './lib/components/ContextMenu.svelte';
   import SettingsDialog from './lib/components/SettingsDialog.svelte';
+  import Sidebar from './lib/components/Sidebar.svelte';
   
   let showWelcome = true;
   let contextMenuX = 0;
@@ -30,8 +32,11 @@
 
   async function openFolder() {
     try {
-      const images = await pickImageFolder();
-      if (!images) return;
+      const folderPath = await pickFolderPath();
+      if (!folderPath) return;
+      fileTree.setRoot(folderPath);
+      await fileTree.refreshRoot();
+      const images = await scanFolderForImages(folderPath);
       viewer.loadFolder(images);
     } catch (err) {
       console.error('Failed to open folder:', err);
@@ -89,29 +94,32 @@
   <TitleBar />
 
   <!-- Main viewer area -->
-  <div class="viewer-container" on:contextmenu={handleContextMenu} role="main">
-    {#if showWelcome}
-      <div class="welcome">
-        <h1>nocap</h1>
-        <p>Open an image or folder to get started</p>
-        
-        <div class="welcome-buttons">
-          <button type="button" class="action-button" on:click={openFile}>
-            <span class="button-icon">📄</span>
-            <span>Open File</span>
-          </button>
-          <button type="button" class="action-button" on:click={openFolder}>
-            <span class="button-icon">📁</span>
-            <span>Open Folder</span>
-          </button>
-        </div>
+  <div class="content">
+    <Sidebar />
+    <div class="viewer-container" on:contextmenu={handleContextMenu} role="main">
+      {#if showWelcome}
+        <div class="welcome">
+          <h1>nocap</h1>
+          <p>Open an image or folder to get started</p>
 
-        <p class="hint">Or use the menu (☰) or right-click anywhere</p>
-      </div>
-    {:else}
-      <ImageViewer />
-      <NavigationControls />
-    {/if}
+          <div class="welcome-buttons">
+            <button type="button" class="action-button" on:click={openFile}>
+              <span class="button-icon">📄</span>
+              <span>Open File</span>
+            </button>
+            <button type="button" class="action-button" on:click={openFolder}>
+              <span class="button-icon">📁</span>
+              <span>Open Folder</span>
+            </button>
+          </div>
+
+          <p class="hint">Or use the menu (☰) or right-click anywhere</p>
+        </div>
+      {:else}
+        <ImageViewer />
+        <NavigationControls />
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -135,6 +143,13 @@
     justify-content: center;
     overflow: hidden;
     background: #0a0a0a;
+  }
+
+  .content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
   }
 
   .welcome {

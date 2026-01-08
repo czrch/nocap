@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { pickImageFile, pickImageFolder } from '../actions/open';
+  import { pickFolderPath, pickImageFile, scanFolderForImages } from '../actions/open';
+  import { fileTree } from '../stores/fileTree';
   import { viewer } from '../stores/viewer';
   import { ui } from '../stores/ui';
 
@@ -19,8 +20,11 @@
   async function openFolder() {
     closeMenu();
     try {
-      const images = await pickImageFolder();
-      if (!images) return;
+      const folderPath = await pickFolderPath();
+      if (!folderPath) return;
+      fileTree.setRoot(folderPath);
+      await fileTree.refreshRoot();
+      const images = await scanFolderForImages(folderPath);
       viewer.loadFolder(images);
     } catch (err) {
       console.error('Failed to open folder:', err);

@@ -32,17 +32,27 @@ export async function pickImageFile(): Promise<ImageFile | null> {
   return imageFileFromPath(selected);
 }
 
-export async function pickImageFolder(): Promise<ImageFile[] | null> {
+export async function pickFolderPath(): Promise<string | null> {
   const selected = await open({
     directory: true,
     multiple: false,
   });
 
   if (!selected || typeof selected !== 'string') return null;
+  return selected;
+}
 
-  const images = await invoke<ImageFile[]>('scan_folder_for_images', {
-    folderPath: selected,
+export async function scanFolderForImages(folderPath: string): Promise<ImageFile[]> {
+  return invoke<ImageFile[]>('scan_folder_for_images', {
+    folderPath,
   });
+}
+
+export async function pickImageFolder(): Promise<ImageFile[] | null> {
+  const selected = await pickFolderPath();
+  if (!selected) return null;
+
+  const images = await scanFolderForImages(selected);
 
   if (!images || images.length === 0) {
     await message('No images found in the selected folder.', {
