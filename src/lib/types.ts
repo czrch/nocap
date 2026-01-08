@@ -20,3 +20,7 @@ export interface FsEntry {
   kind: FsEntryKind;
   children: FsEntry[];
 }
+
+export interface FsChangeEvent {
+  paths: string[];
+}

@@ -36,6 +36,7 @@
       if (!folderPath) return;
       fileTree.setRoot(folderPath);
       await fileTree.refreshRoot();
+      await fileTree.startWatch();
       const images = await scanFolderForImages(folderPath);
       viewer.loadFolder(images);
     } catch (err) {

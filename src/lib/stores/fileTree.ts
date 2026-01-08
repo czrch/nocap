@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { get, writable } from 'svelte/store';
-import type { FsEntry } from '../types';
+import type { FsChangeEvent, FsEntry } from '../types';
 
 interface FileTreeState {
   rootPath: string | null;
@@ -52,6 +53,9 @@ function createFileTreeStore() {
   const { subscribe, update } = writable<FileTreeState>(initialState);
   let rootRequestId = 0;
   const childRequests = new Map<string, number>();
+  let unlisten: UnlistenFn | null = null;
+  let watchRoot: string | null = null;
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
   async function refreshRoot(): Promise<void> {
     const state = get({ subscribe });
@@ -116,6 +120,15 @@ function createFileTreeStore() {
   }
 
   function setRoot(rootPath: string | null): void {
+    if (refreshTimer) {
+      clearTimeout(refreshTimer);
+      refreshTimer = null;
+    }
+    if (unlisten && watchRoot && watchRoot !== rootPath) {
+      unlisten();
+      unlisten = null;
+      watchRoot = null;
+    }
     update(() => ({
       ...initialState,
       rootPath,
@@ -147,11 +160,41 @@ function createFileTreeStore() {
     }
   }
 
+  function scheduleRefresh(): void {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => {
+      void refreshRoot();
+    }, 150);
+  }
+
+  async function startWatch(): Promise<void> {
+    const state = get({ subscribe });
+    if (!state.rootPath) return;
+
+    if (watchRoot === state.rootPath && unlisten) return;
+
+    watchRoot = state.rootPath;
+    if (unlisten) {
+      unlisten();
+      unlisten = null;
+    }
+
+    try {
+      await invoke('start_watch', { rootPath: state.rootPath });
+      unlisten = await listen<FsChangeEvent>('fs://changed', () => {
+        scheduleRefresh();
+      });
+    } catch (err) {
+      console.error('Failed to start file watcher:', err);
+    }
+  }
+
   return {
     subscribe,
     setRoot,
     refreshRoot,
     toggle,
+    startWatch,
   };
 }
 

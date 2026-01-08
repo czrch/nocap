@@ -19,3 +19,8 @@ pub struct FsEntry {
     pub kind: FsEntryKind,
     pub children: Vec<FsEntry>,
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct FsChangeEvent {
+    pub paths: Vec<String>,
+}
