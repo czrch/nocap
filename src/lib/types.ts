@@ -11,3 +11,12 @@ export interface ViewerState {
   zoomLevel: number;
   fitToWindow: boolean;
 }
+
+export type FsEntryKind = 'file' | 'directory';
+
+export interface FsEntry {
+  path: string;
+  name: string;
+  kind: FsEntryKind;
+  children: FsEntry[];
+}
