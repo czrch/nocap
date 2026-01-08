@@ -1,9 +1,17 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import FileTreeNode from './FileTreeNode.svelte';
   import type { FsEntry } from '../types';
   import { fileTree } from '../stores/fileTree';
   import { viewer } from '../stores/viewer';
   import { imageFileFromPath, isSupportedImage } from '../utils/images';
+
+  const MIN_WIDTH = 200;
+  const MAX_WIDTH = 420;
+  let width = 260;
+  let dragStartX = 0;
+  let dragStartWidth = 0;
+  let dragging = false;
 
   function handleToggle(event: CustomEvent<string>) {
     fileTree.toggle(event.detail);
@@ -15,9 +23,40 @@
     if (!isSupportedImage(entry.path)) return;
     viewer.loadImage(imageFileFromPath(entry.path));
   }
+
+  function clampWidth(nextWidth: number) {
+    return Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, nextWidth));
+  }
+
+  function handleResizeStart(event: PointerEvent) {
+    if (event.button !== 0) return;
+    dragging = true;
+    dragStartX = event.clientX;
+    dragStartWidth = width;
+    window.addEventListener('pointermove', handleResizeMove);
+    window.addEventListener('pointerup', handleResizeEnd);
+  }
+
+  function handleResizeMove(event: PointerEvent) {
+    if (!dragging) return;
+    const delta = event.clientX - dragStartX;
+    width = clampWidth(dragStartWidth + delta);
+  }
+
+  function handleResizeEnd() {
+    if (!dragging) return;
+    dragging = false;
+    window.removeEventListener('pointermove', handleResizeMove);
+    window.removeEventListener('pointerup', handleResizeEnd);
+  }
+
+  onDestroy(() => {
+    window.removeEventListener('pointermove', handleResizeMove);
+    window.removeEventListener('pointerup', handleResizeEnd);
+  });
 </script>
 
-<aside class="sidebar" role="navigation" aria-label="Folder">
+<aside class="sidebar" style={`width: ${width}px`} role="navigation" aria-label="Folder">
   <div class="sidebar-header">
     <div class="title">Folder</div>
     {#if $fileTree.rootPath}
@@ -38,13 +77,16 @@
       <div class="empty">No folder open</div>
     {/if}
   </div>
+
+  <div class="resize-handle" on:pointerdown={handleResizeStart}></div>
 </aside>
 
 <style>
   .sidebar {
-    width: 260px;
+    position: relative;
+    flex: 0 0 auto;
     min-width: 200px;
-    max-width: 320px;
+    max-width: 420px;
     background: #111;
     border-right: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
@@ -83,5 +125,18 @@
     color: #666;
     font-size: 0.85rem;
     padding: 0.5rem 0.25rem;
+  }
+
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+  }
+
+  .resize-handle:hover {
+    background: rgba(255, 255, 255, 0.05);
   }
 </style>
