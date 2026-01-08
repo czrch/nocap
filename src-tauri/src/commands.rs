@@ -1,5 +1,5 @@
-use crate::models::ImageFile;
-use crate::utils::scan_directory_for_images;
+use crate::models::{FsEntry, ImageFile};
+use crate::utils::{build_fs_tree, scan_directory_for_images};
 use std::path::Path;
 
 /// Get all images in the same directory as the current image path
@@ -33,6 +33,26 @@ pub async fn scan_folder_for_images(folder_path: String) -> Result<Vec<ImageFile
 
         let images = scan_directory_for_images(path);
         Ok(images)
+    })
+    .await
+    .map_err(|e| format!("Worker thread error: {}", e))?
+}
+
+/// Build a directory tree up to a given depth.
+#[tauri::command]
+pub async fn list_dir_tree(root_path: String, depth: u8) -> Result<FsEntry, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        let path = Path::new(&root_path);
+
+        if !path.exists() {
+            return Err("Directory does not exist".to_string());
+        }
+
+        if !path.is_dir() {
+            return Err("Path is not a directory".to_string());
+        }
+
+        build_fs_tree(path, depth)
     })
     .await
     .map_err(|e| format!("Worker thread error: {}", e))?
